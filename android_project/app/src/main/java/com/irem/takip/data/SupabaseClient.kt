@@ -26,8 +26,8 @@ object SupabaseProvider {
 
     val client: SupabaseClient by lazy {
         createSupabaseClient(
-            supabaseUrl = BuildConfig.SUPABASE_URL,
-            supabaseKey = BuildConfig.SUPABASE_ANON_KEY
+            supabaseUrl =https://dbfozafdvmuuvmvqcswk.supabase.co,
+            supabaseKey =sb_publishable_cGo8QSP72fzw6GGAwO-o-Q_JD1x0LPc
         ) {
             defaultSerializer = KotlinXSerializer(jsonConfig)
             install(Postgrest)
