@@ -72,9 +72,9 @@ export const CariListeFragment: React.FC = () => {
   };
 
   return (
-    <div className="space-y-3 pb-20">
+    <div className="p-4 space-y-3 pb-16 bg-[#F1F5F9] min-h-full">
       
-      {/* Search and Add Header (Matching fragment_cari_liste.xml) */}
+      {/* Search and Add Header */}
       <div className="flex items-center gap-2">
         <div className="relative flex-1">
           <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
@@ -83,12 +83,12 @@ export const CariListeFragment: React.FC = () => {
             placeholder="Cari adı, telefon veya şehir ara..."
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
-            className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-9 pr-4 py-2.5 text-xs text-white placeholder-slate-500 focus:ring-2 focus:ring-purple-500 outline-hidden"
+            className="w-full bg-white border border-slate-200/80 rounded-2xl pl-9 pr-4 py-2.5 text-xs text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-[#1E88E5] outline-hidden shadow-xs"
           />
           {searchQuery && (
             <button
               onClick={() => setSearchQuery('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
             >
               <X className="w-3.5 h-3.5" />
             </button>
@@ -98,7 +98,7 @@ export const CariListeFragment: React.FC = () => {
         <button
           id="btn-add-cari-modal"
           onClick={() => setShowAddModal(true)}
-          className="flex items-center gap-1 bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs px-3 py-2.5 rounded-xl shadow-lg shadow-purple-600/20 shrink-0"
+          className="flex items-center gap-1 bg-[#1E88E5] hover:bg-[#1976D2] text-white font-extrabold text-xs px-3.5 py-2.5 rounded-2xl shadow-md shadow-blue-500/20 shrink-0 active:scale-95 transition-all"
         >
           <UserPlus className="w-4 h-4" />
           <span className="hidden sm:inline">Yeni Cari</span>
@@ -117,10 +117,10 @@ export const CariListeFragment: React.FC = () => {
           <button
             key={chip.id}
             onClick={() => setFilterType(chip.id as any)}
-            className={`px-3 py-1 rounded-full whitespace-nowrap transition-all ${
+            className={`px-3 py-1.5 rounded-full whitespace-nowrap transition-all ${
               filterType === chip.id
-                ? 'bg-purple-500 text-white shadow-xs font-bold'
-                : 'bg-slate-850 text-slate-400 border border-slate-800 hover:text-slate-200'
+                ? 'bg-[#1E88E5] text-white shadow-xs font-bold'
+                : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
             }`}
           >
             {chip.label}
@@ -128,21 +128,21 @@ export const CariListeFragment: React.FC = () => {
         ))}
       </div>
 
-      {/* Cari List (Matching item_cari.xml) */}
+      {/* Cari List (Item Cari) */}
       <div className="space-y-2">
         {filteredCariler.length > 0 ? (
           filteredCariler.map(cari => (
             <div
               key={cari.id}
               onClick={() => setDetailCari(cari)}
-              className="p-3.5 rounded-2xl bg-slate-900 hover:bg-slate-850 border border-slate-800/80 cursor-pointer transition-all flex items-center justify-between gap-3 group shadow-xs"
+              className="p-3.5 rounded-2xl bg-white hover:bg-slate-50/80 border border-slate-200/70 cursor-pointer transition-all flex items-center justify-between gap-3 group shadow-xs active:scale-98"
             >
               <div className="flex items-center gap-3 min-w-0">
                 <div
-                  className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm shrink-0 ${
+                  className={`w-10 h-10 rounded-2xl flex items-center justify-center font-bold text-sm shrink-0 ${
                     cari.grup === 'Tedarikçi'
-                      ? 'bg-blue-500/15 text-blue-400'
-                      : 'bg-purple-500/15 text-purple-400'
+                      ? 'bg-amber-50 text-amber-600'
+                      : 'bg-blue-50 text-[#1E88E5]'
                   }`}
                 >
                   {cari.ad.charAt(0).toUpperCase()}
@@ -150,159 +150,140 @@ export const CariListeFragment: React.FC = () => {
 
                 <div className="min-w-0">
                   <div className="flex items-center gap-1.5">
-                    <h4 className="font-bold text-xs text-slate-200 truncate group-hover:text-purple-300 transition-colors">
+                    <h4 className="font-extrabold text-xs text-slate-800 truncate">
                       {cari.ad}
                     </h4>
-                    <span className="text-[9px] px-1.5 py-0.2 rounded bg-slate-800 text-slate-400 font-medium">
+                    <span className="text-[9px] px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-600 font-bold">
                       {cari.grup}
                     </span>
                   </div>
 
-                  <p className="text-[11px] text-slate-400 truncate mt-0.5">
-                    {cari.sehir || 'Şehir Yok'} {cari.telefon ? `• ${cari.telefon}` : ''}
-                  </p>
+                  <div className="flex items-center gap-3 text-[11px] text-slate-500 mt-0.5">
+                    {cari.telefon ? (
+                      <span className="flex items-center gap-1">
+                        <Phone className="w-3 h-3 text-slate-400" />
+                        {cari.telefon}
+                      </span>
+                    ) : (
+                      <span>{cari.sehir || 'Şehir Belirtilmedi'}</span>
+                    )}
+                  </div>
                 </div>
               </div>
 
-              <div className="text-right shrink-0 flex items-center gap-2">
-                <div>
-                  <span
-                    className={`font-extrabold text-xs block ${
-                      cari.bakiye > 0
-                        ? 'text-red-400'
-                        : cari.bakiye < 0
-                        ? 'text-emerald-400'
-                        : 'text-slate-400'
-                    }`}
-                  >
-                    {Math.abs(cari.bakiye).toLocaleString('tr-TR', { minimumFractionDigits: 2 })} TL
-                  </span>
-                  <span className="text-[9px] text-slate-400 block font-medium">
-                    {cari.bakiye > 0 ? 'Borçlu' : cari.bakiye < 0 ? 'Alacaklı' : 'Sıfır'}
-                  </span>
-                </div>
-                <ChevronRight className="w-4 h-4 text-slate-600 group-hover:text-slate-300 transition-colors" />
+              {/* Bakiye */}
+              <div className="text-right shrink-0">
+                <span
+                  className={`text-xs font-black block ${
+                    cari.bakiye > 0
+                      ? 'text-red-600'
+                      : cari.bakiye < 0
+                      ? 'text-emerald-600'
+                      : 'text-slate-500'
+                  }`}
+                >
+                  {Math.abs(cari.bakiye).toLocaleString('tr-TR', { minimumFractionDigits: 2 })} TL
+                </span>
+                <span className="text-[10px] text-slate-400">
+                  {cari.bakiye > 0 ? 'Borçlu' : cari.bakiye < 0 ? 'Alacaklı' : 'Bakiye Sıfır'}
+                </span>
               </div>
             </div>
           ))
         ) : (
-          <div className="py-16 text-center text-xs text-slate-400 bg-slate-900 rounded-2xl border border-slate-800">
-            Aranan kriterlere uygun cari hesap bulunamadı.
+          <div className="py-12 text-center text-slate-400 text-xs bg-white rounded-2xl border border-slate-200/80 p-6">
+            Kayıtlı cari hesap bulunamadı.
           </div>
         )}
       </div>
 
-      {/* Add Cari Modal */}
+      {/* Cari Detay Ekstresi Modalı */}
+      {detailCari && (
+        <CariDetayModal cari={detailCari} onClose={() => setDetailCari(null)} />
+      )}
+
+      {/* Yeni Cari Ekleme Modalı */}
       {showAddModal && (
-        <div className="fixed inset-0 z-50 bg-slate-950/75 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl text-slate-100">
-            <div className="px-5 py-4 border-b border-slate-800 flex items-center justify-between bg-slate-850">
-              <h3 className="font-bold text-sm text-white">Yeni Cari Hesap Kartı Aç</h3>
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
+          <div className="bg-white w-full max-w-sm rounded-3xl p-5 shadow-2xl border border-slate-100 flex flex-col gap-3.5">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <h3 className="font-extrabold text-sm text-slate-800">Yeni Cari Hesap Tanımla</h3>
               <button
                 onClick={() => setShowAddModal(false)}
-                className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-white"
+                className="w-7 h-7 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <form onSubmit={handleCreateCari} className="p-5 space-y-3 text-xs">
+            <form onSubmit={handleCreateCari} className="space-y-2.5">
               <div>
-                <label className="block font-semibold text-slate-300 mb-1">Cari Ünvanı / Firma Adı *</label>
+                <label className="text-[11px] font-bold text-slate-600 block mb-1">Cari / Firma Adı *</label>
                 <input
                   type="text"
                   required
-                  placeholder="Örn: Özkan İnşaat Ltd."
                   value={newAd}
                   onChange={e => setNewAd(e.target.value)}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2.5 text-white focus:ring-2 focus:ring-purple-500 outline-hidden"
+                  placeholder="Örn: Yılmaz İnşaat Ltd."
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-800 focus:outline-hidden focus:border-[#1E88E5]"
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block font-semibold text-slate-300 mb-1">Cari Grubu</label>
+                  <label className="text-[11px] font-bold text-slate-600 block mb-1">Telefon</label>
+                  <input
+                    type="text"
+                    value={newTelefon}
+                    onChange={e => setNewTelefon(e.target.value)}
+                    placeholder="0532..."
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-800 focus:outline-hidden focus:border-[#1E88E5]"
+                  />
+                </div>
+                <div>
+                  <label className="text-[11px] font-bold text-slate-600 block mb-1">Cari Grubu</label>
                   <select
                     value={newGrup}
                     onChange={e => setNewGrup(e.target.value)}
-                    className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white outline-hidden"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-800 focus:outline-hidden focus:border-[#1E88E5]"
                   >
                     <option value="Müşteri">Müşteri</option>
                     <option value="Tedarikçi">Tedarikçi</option>
                     <option value="Toptancı">Toptancı</option>
-                    <option value="Bayi">Bayi</option>
                   </select>
-                </div>
-
-                <div>
-                  <label className="block font-semibold text-slate-300 mb-1">Telefon</label>
-                  <input
-                    type="text"
-                    placeholder="0532 ..."
-                    value={newTelefon}
-                    onChange={e => setNewTelefon(e.target.value)}
-                    className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white outline-hidden"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-semibold text-slate-300 mb-1">Yetkili Kişi</label>
-                  <input
-                    type="text"
-                    placeholder="Ahmet Bey"
-                    value={newYetkili}
-                    onChange={e => setNewYetkili(e.target.value)}
-                    className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white outline-hidden"
-                  />
-                </div>
-
-                <div>
-                  <label className="block font-semibold text-slate-300 mb-1">Şehir / İlçe</label>
-                  <input
-                    type="text"
-                    placeholder="İstanbul / Kadıköy"
-                    value={newSehir}
-                    onChange={e => setNewSehir(e.target.value)}
-                    className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white outline-hidden"
-                  />
                 </div>
               </div>
 
               <div>
-                <label className="block font-semibold text-slate-300 mb-1">Vergi Numarası / TCKN</label>
+                <label className="text-[11px] font-bold text-slate-600 block mb-1">Şehir</label>
                 <input
                   type="text"
-                  placeholder="1234567890"
-                  value={newVergiNo}
-                  onChange={e => setNewVergiNo(e.target.value)}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white outline-hidden"
+                  value={newSehir}
+                  onChange={e => setNewSehir(e.target.value)}
+                  placeholder="Örn: İstanbul"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-800 focus:outline-hidden focus:border-[#1E88E5]"
                 />
               </div>
 
-              <div className="pt-2 flex justify-end gap-2">
+              <div className="pt-2 flex gap-2">
                 <button
                   type="button"
                   onClick={() => setShowAddModal(false)}
-                  className="px-4 py-2 font-medium text-slate-400 hover:text-white bg-slate-800 rounded-xl"
+                  className="flex-1 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-bold text-xs"
                 >
                   Vazgeç
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 font-bold text-white bg-purple-600 hover:bg-purple-500 rounded-xl shadow-lg shadow-purple-600/20"
+                  className="flex-1 py-2.5 rounded-xl bg-[#1E88E5] text-white font-extrabold text-xs shadow-md shadow-blue-500/20"
                 >
-                  Cariyi Kaydet
+                  Kaydet (Supabase)
                 </button>
               </div>
             </form>
           </div>
         </div>
       )}
-
-      {/* Cari Detay & Ekstre Modal */}
-      {detailCari && <CariDetayModal cari={detailCari} onClose={() => setDetailCari(null)} />}
 
     </div>
   );

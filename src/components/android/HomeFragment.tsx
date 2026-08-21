@@ -1,276 +1,234 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import {
-  ShoppingCart,
-  Package,
-  Users,
-  CreditCard,
-  FileCheck,
-  TrendingUp,
-  AlertTriangle,
-  ArrowUpRight,
-  ArrowDownLeft,
+  Send,
   Plus,
-  Receipt,
+  Users,
+  Menu,
+  RotateCcw,
   FileText,
-  BadgeAlert,
-  Wallet
+  Eye,
+  Calendar,
+  Wrench,
+  TrendingUp,
+  PackagePlus
 } from 'lucide-react';
+import { StokEkleModal } from './StokEkleModal';
+import { TransferModal } from './TransferModal';
+import { TekliflerModal } from './TekliflerModal';
+import { CariGruplariModal } from './CariGruplariModal';
+import { UrunGruplariModal } from './UrunGruplariModal';
 
 export const HomeFragment: React.FC = () => {
   const {
     aktifYil,
-    cariler,
-    stoklar,
-    satislar,
-    tahsilatlar,
     setActiveTab,
-    getYillikOzetRapor,
-    setDetailCari
   } = useApp();
 
-  const ozet = getYillikOzetRapor(aktifYil);
-  const kritikStoklar = stoklar.filter(s => s.yil === aktifYil && s.aktif && s.miktar <= s.kritik_miktar);
-  const sonSatislar = satislar.filter(s => s.yil === aktifYil).slice(0, 4);
+  const [showStokEkle, setShowStokEkle] = useState(false);
+  const [showTransfer, setShowTransfer] = useState(false);
+  const [showTeklifler, setShowTeklifler] = useState(false);
+  const [showCariGruplari, setShowCariGruplari] = useState(false);
+  const [showUrunGruplari, setShowUrunGruplari] = useState(false);
 
   return (
-    <div className="space-y-4 pb-20">
+    <div className="bg-[#F1F5F9] min-h-full pb-16 flex flex-col select-none">
       
-      {/* 1. Header Banner & Revenue Card (Matching Android bg_home_header.xml) */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-900 via-indigo-900 to-slate-900 p-5 text-white shadow-xl border border-blue-800/40">
-        <div className="flex items-center justify-between">
-          <div>
-            <span className="text-[11px] font-bold tracking-wider uppercase text-blue-300">
-              {aktifYil} YILI MALİ DURUM ÖZETİ
-            </span>
-            <h2 className="text-2xl font-black tracking-tight mt-0.5 text-white">
-              {ozet.toplam_satis.toLocaleString('tr-TR', { minimumFractionDigits: 2 })} TL
-            </h2>
-            <p className="text-xs text-blue-200/80 mt-0.5">Yıllık Toplam Ciro ({ozet.satis_adedi} Satış)</p>
-          </div>
-          <div className="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/15 shadow-inner">
-            <TrendingUp className="w-6 h-6 text-emerald-400" />
-          </div>
-        </div>
-
-        {/* Sub-Metrics Pill Grid */}
-        <div className="grid grid-cols-3 gap-2 mt-4 pt-3 border-t border-white/10">
-          <div className="bg-white/5 rounded-xl p-2 text-center border border-white/5">
-            <span className="text-[10px] text-blue-200 block">Tahsilat</span>
-            <span className="text-xs font-bold text-emerald-300">
-              +{ozet.toplam_tahsilat.toLocaleString('tr-TR', { maximumFractionDigits: 0 })} TL
-            </span>
-          </div>
-          <div className="bg-white/5 rounded-xl p-2 text-center border border-white/5">
-            <span className="text-[10px] text-blue-200 block">Cari Alacak</span>
-            <span className="text-xs font-bold text-amber-300">
-              {ozet.toplam_cari_alacak.toLocaleString('tr-TR', { maximumFractionDigits: 0 })} TL
-            </span>
-          </div>
-          <div className="bg-white/5 rounded-xl p-2 text-center border border-white/5">
-            <span className="text-[10px] text-blue-200 block">Kritik Stok</span>
-            <span className={`text-xs font-bold ${kritikStoklar.length > 0 ? 'text-red-400' : 'text-emerald-300'}`}>
-              {kritikStoklar.length} Ürün
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* 2. Quick Action Grid (Matching Android fragment_home.xml buttons) */}
-      <div>
-        <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2.5 px-1 flex items-center justify-between">
-          <span>Hızlı İşlemler</span>
-          <span className="text-[10px] text-emerald-400 font-medium">Supabase Triggers Aktif</span>
-        </h3>
+      {/* 1. Header with Blue-to-Cyan Gradient Banner (Matching Screenshot 1) */}
+      <div className="bg-gradient-to-b from-[#1E88E5] via-[#0288D1] to-[#00B4D8] pt-6 pb-20 px-5 relative overflow-hidden">
+        {/* Subtle background glow circle */}
+        <div className="absolute top-0 right-0 w-48 h-48 bg-white/10 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none" />
         
-        <div className="grid grid-cols-4 gap-2">
-          {/* Satış Yap */}
-          <button
-            id="btn-quick-satis"
-            onClick={() => setActiveTab('satis')}
-            className="flex flex-col items-center justify-center p-3 rounded-xl bg-slate-850 hover:bg-slate-800 border border-slate-800 transition-all group active:scale-95 text-center shadow-xs"
-          >
-            <div className="w-10 h-10 rounded-xl bg-emerald-500/15 text-emerald-400 flex items-center justify-center group-hover:scale-110 transition-transform">
-              <ShoppingCart className="w-5 h-5" />
-            </div>
-            <span className="text-xs font-semibold text-slate-200 mt-1.5">Satış Yap</span>
-            <span className="text-[9px] text-slate-400">Hızlı Kasa</span>
-          </button>
-
-          {/* Mal Alımı */}
-          <button
-            id="btn-quick-alim"
-            onClick={() => setActiveTab('alim')}
-            className="flex flex-col items-center justify-center p-3 rounded-xl bg-slate-850 hover:bg-slate-800 border border-slate-800 transition-all group active:scale-95 text-center shadow-xs"
-          >
-            <div className="w-10 h-10 rounded-xl bg-blue-500/15 text-blue-400 flex items-center justify-center group-hover:scale-110 transition-transform">
-              <Package className="w-5 h-5" />
-            </div>
-            <span className="text-xs font-semibold text-slate-200 mt-1.5">Mal Alımı</span>
-            <span className="text-[9px] text-slate-400">Alış Faturası</span>
-          </button>
-
-          {/* Cariler */}
-          <button
-            id="btn-quick-cariler"
-            onClick={() => setActiveTab('cariler')}
-            className="flex flex-col items-center justify-center p-3 rounded-xl bg-slate-850 hover:bg-slate-800 border border-slate-800 transition-all group active:scale-95 text-center shadow-xs"
-          >
-            <div className="w-10 h-10 rounded-xl bg-purple-500/15 text-purple-400 flex items-center justify-center group-hover:scale-110 transition-transform">
-              <Users className="w-5 h-5" />
-            </div>
-            <span className="text-xs font-semibold text-slate-200 mt-1.5">Cariler</span>
-            <span className="text-[9px] text-slate-400">Müşteri/Tedarik</span>
-          </button>
-
-          {/* Stoklar */}
-          <button
-            id="btn-quick-stoklar"
-            onClick={() => setActiveTab('stoklar')}
-            className="flex flex-col items-center justify-center p-3 rounded-xl bg-slate-850 hover:bg-slate-800 border border-slate-800 transition-all group active:scale-95 text-center shadow-xs"
-          >
-            <div className="w-10 h-10 rounded-xl bg-amber-500/15 text-amber-400 flex items-center justify-center group-hover:scale-110 transition-transform">
-              <Package className="w-5 h-5" />
-            </div>
-            <span className="text-xs font-semibold text-slate-200 mt-1.5">Stoklar</span>
-            <span className="text-[9px] text-slate-400">Depo Sayımı</span>
-          </button>
-
-          {/* Çek & Senet */}
-          <button
-            id="btn-quick-cek"
-            onClick={() => setActiveTab('cek_senet')}
-            className="flex flex-col items-center justify-center p-3 rounded-xl bg-slate-850 hover:bg-slate-800 border border-slate-800 transition-all group active:scale-95 text-center shadow-xs"
-          >
-            <div className="w-10 h-10 rounded-xl bg-indigo-500/15 text-indigo-400 flex items-center justify-center group-hover:scale-110 transition-transform">
-              <FileCheck className="w-5 h-5" />
-            </div>
-            <span className="text-xs font-semibold text-slate-200 mt-1.5">Çek & Senet</span>
-            <span className="text-[9px] text-slate-400">Portföy Takip</span>
-          </button>
-
-          {/* Raporlar */}
-          <button
-            id="btn-quick-raporlar"
-            onClick={() => setActiveTab('raporlar')}
-            className="flex flex-col items-center justify-center p-3 rounded-xl bg-slate-850 hover:bg-slate-800 border border-slate-800 transition-all group active:scale-95 text-center shadow-xs"
-          >
-            <div className="w-10 h-10 rounded-xl bg-rose-500/15 text-rose-400 flex items-center justify-center group-hover:scale-110 transition-transform">
-              <TrendingUp className="w-5 h-5" />
-            </div>
-            <span className="text-xs font-semibold text-slate-200 mt-1.5">Raporlar</span>
-            <span className="text-[9px] text-slate-400">RPC Dashboard</span>
-          </button>
-
-          {/* Tahsilat Ekle */}
-          <button
-            onClick={() => setActiveTab('cariler')}
-            className="flex flex-col items-center justify-center p-3 rounded-xl bg-slate-850 hover:bg-slate-800 border border-slate-800 transition-all group active:scale-95 text-center shadow-xs"
-          >
-            <div className="w-10 h-10 rounded-xl bg-teal-500/15 text-teal-400 flex items-center justify-center group-hover:scale-110 transition-transform">
-              <ArrowDownLeft className="w-5 h-5" />
-            </div>
-            <span className="text-xs font-semibold text-slate-200 mt-1.5">Tahsilat</span>
-            <span className="text-[9px] text-slate-400">Nakit / Havale</span>
-          </button>
-
-          {/* Teklifler */}
-          <button
-            onClick={() => setActiveTab('satis')}
-            className="flex flex-col items-center justify-center p-3 rounded-xl bg-slate-850 hover:bg-slate-800 border border-slate-800 transition-all group active:scale-95 text-center shadow-xs"
-          >
-            <div className="w-10 h-10 rounded-xl bg-cyan-500/15 text-cyan-400 flex items-center justify-center group-hover:scale-110 transition-transform">
-              <FileText className="w-5 h-5" />
-            </div>
-            <span className="text-xs font-semibold text-slate-200 mt-1.5">Teklifler</span>
-            <span className="text-[9px] text-slate-400">Fiyat Teklifi</span>
-          </button>
-        </div>
+        <h1 className="text-2xl sm:text-3xl font-black text-white tracking-wide">
+          HOŞ GELDİNİZ
+        </h1>
+        <p className="text-xs text-blue-100/90 font-medium mt-0.5">
+          {aktifYil} Çalışma Yılı • Supabase Bulut Veritabanı
+        </p>
       </div>
 
-      {/* 3. Critical Stock Alert Banner (If Any) */}
-      {kritikStoklar.length > 0 && (
-        <div className="p-3.5 rounded-xl bg-red-950/40 border border-red-800/50 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-red-500/20 text-red-400 flex items-center justify-center shrink-0">
-              <AlertTriangle className="w-5 h-5" />
-            </div>
-            <div>
-              <span className="font-bold text-xs text-red-200 block">Kritik Stok Uyarısı!</span>
-              <p className="text-[11px] text-red-300/80">
-                {kritikStoklar.length} ürün kritik eşiğin altına düştü ({kritikStoklar[0].ad})
-              </p>
-            </div>
+      {/* 2. Main Floating White Card (Overlapping the Gradient) */}
+      <div className="px-4 -mt-14 relative z-10">
+        <div className="bg-white rounded-3xl p-4 sm:p-5 shadow-xl shadow-blue-950/10 border border-slate-100 flex flex-col gap-3.5">
+          
+          {/* Top 2 Big Action Buttons: SATIŞ YAP & ALIM YAP */}
+          <div className="grid grid-cols-2 gap-3.5">
+            {/* SATIŞ YAP (Indigo / Royal Blue) */}
+            <button
+              id="btn-main-satis"
+              onClick={() => setActiveTab('satis')}
+              className="h-32 rounded-2xl bg-gradient-to-br from-[#303F9F] to-[#283593] hover:from-[#3949AB] hover:to-[#303F9F] text-white flex flex-col items-center justify-center gap-2.5 shadow-lg shadow-indigo-900/25 active:scale-96 transition-all cursor-pointer group"
+            >
+              <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <Send className="w-7 h-7 text-white fill-white rotate-45 ml-1 -mt-1" />
+              </div>
+              <span className="font-extrabold text-sm sm:text-base tracking-wider">
+                SATIŞ YAP
+              </span>
+            </button>
+
+            {/* ALIM YAP (Teal / Emerald) */}
+            <button
+              id="btn-main-alim"
+              onClick={() => setActiveTab('alim')}
+              className="h-32 rounded-2xl bg-gradient-to-br from-[#00897B] to-[#00796B] hover:from-[#009688] hover:to-[#00897B] text-white flex flex-col items-center justify-center gap-2.5 shadow-lg shadow-teal-900/25 active:scale-96 transition-all cursor-pointer group"
+            >
+              <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <Plus className="w-8 h-8 text-white stroke-[2.5]" />
+              </div>
+              <span className="font-extrabold text-sm sm:text-base tracking-wider">
+                ALIM YAP
+              </span>
+            </button>
           </div>
-          <button
-            onClick={() => setActiveTab('stoklar')}
-            className="text-xs font-bold text-red-300 hover:text-white bg-red-900/50 hover:bg-red-800/60 px-2.5 py-1.5 rounded-lg border border-red-700/50 shrink-0"
-          >
-            İncele
-          </button>
-        </div>
-      )}
 
-      {/* 4. Recent Sales & Invoices */}
-      <div className="bg-slate-900 rounded-2xl border border-slate-800 p-4 shadow-sm">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="font-bold text-xs uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
-            <Receipt className="w-4 h-4 text-emerald-400" />
-            <span>Son Satış Fişleri ({aktifYil})</span>
-          </h3>
-          <button
-            onClick={() => setActiveTab('satis')}
-            className="text-[11px] text-blue-400 hover:text-blue-300 font-semibold flex items-center gap-0.5"
-          >
-            <span>Tümü</span>
-            <ArrowUpRight className="w-3 h-3" />
-          </button>
-        </div>
+          {/* Bottom 2 Wide Buttons: CARİ LİSTESİ & STOK LİSTESİ */}
+          <div className="grid grid-cols-2 gap-3">
+            {/* CARİ LİSTESİ */}
+            <button
+              id="btn-main-cariler"
+              onClick={() => setActiveTab('cariler')}
+              className="py-3.5 px-3 rounded-2xl bg-white hover:bg-slate-50 border border-slate-200/80 shadow-sm hover:shadow-md flex flex-col items-center justify-center gap-1.5 active:scale-96 transition-all cursor-pointer group"
+            >
+              <div className="text-[#0288D1] group-hover:scale-110 transition-transform">
+                <Users className="w-6 h-6 stroke-[2]" />
+              </div>
+              <span className="font-extrabold text-xs sm:text-sm text-slate-800 tracking-wide">
+                CARİ LİSTESİ
+              </span>
+            </button>
 
-        <div className="space-y-2">
-          {sonSatislar.length > 0 ? (
-            sonSatislar.map(s => {
-              const cari = cariler.find(c => c.id === s.cari_id);
-              return (
-                <div
-                  key={s.id}
-                  onClick={() => {
-                    if (cari) setDetailCari(cari);
-                  }}
-                  className="flex items-center justify-between p-2.5 rounded-xl bg-slate-850 hover:bg-slate-800/80 border border-slate-800 cursor-pointer transition-colors"
-                >
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <div className="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center shrink-0">
-                      <ShoppingCart className="w-4 h-4" />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="font-semibold text-xs text-slate-200 truncate">{s.cari_adi || cari?.ad || 'Müşteri'}</p>
-                      <div className="flex items-center gap-2 text-[10px] text-slate-400">
-                        <span className="font-mono">{s.fatura_no}</span>
-                        <span>•</span>
-                        <span>{s.odeme_turu}</span>
-                      </div>
-                    </div>
-                  </div>
+            {/* STOK LİSTESİ */}
+            <button
+              id="btn-main-stoklar"
+              onClick={() => setActiveTab('stoklar')}
+              className="py-3.5 px-3 rounded-2xl bg-white hover:bg-slate-50 border border-slate-200/80 shadow-sm hover:shadow-md flex flex-col items-center justify-center gap-1.5 active:scale-96 transition-all cursor-pointer group"
+            >
+              <div className="text-[#0288D1] group-hover:scale-110 transition-transform">
+                <Menu className="w-6 h-6 stroke-[2.5]" />
+              </div>
+              <span className="font-extrabold text-xs sm:text-sm text-slate-800 tracking-wide">
+                STOK LİSTESİ
+              </span>
+            </button>
+          </div>
 
-                  <div className="text-right shrink-0">
-                    <span className="font-bold text-xs text-emerald-400">
-                      {s.net_tutar.toLocaleString('tr-TR', { minimumFractionDigits: 2 })} TL
-                    </span>
-                    <span className="block text-[10px] text-slate-400">
-                      {new Date(s.tarih).toLocaleDateString('tr-TR')}
-                    </span>
-                  </div>
-                </div>
-              );
-            })
-          ) : (
-            <div className="py-6 text-center text-xs text-slate-400">
-              Bu yıla ait henüz satış bulunmuyor. "Satış Yap" ile başlayabilirsiniz.
-            </div>
-          )}
         </div>
       </div>
+
+      {/* 3. Section: DİĞER İŞLEMLER (Matching Screenshot 1) */}
+      <div className="px-4 mt-6">
+        <h2 className="text-xs font-black text-[#546E7A] tracking-wider uppercase mb-3 px-1">
+          DİĞER İŞLEMLER
+        </h2>
+
+        {/* 2-Column Grid for Secondary Operations */}
+        <div className="grid grid-cols-2 gap-3">
+          
+          {/* STOK EKLE */}
+          <button
+            id="btn-other-stok-ekle"
+            onClick={() => setShowStokEkle(true)}
+            className="p-4 rounded-2xl bg-white hover:bg-slate-50 border border-slate-200/70 shadow-sm hover:shadow-md flex flex-col items-center justify-center gap-2 active:scale-96 transition-all cursor-pointer group"
+          >
+            <div className="text-[#00BCD4] group-hover:scale-110 transition-transform">
+              <Plus className="w-6 h-6 stroke-[2.5]" />
+            </div>
+            <span className="font-black text-xs text-slate-700 tracking-wide text-center">
+              STOK EKLE
+            </span>
+          </button>
+
+          {/* TRANSFER */}
+          <button
+            id="btn-other-transfer"
+            onClick={() => setShowTransfer(true)}
+            className="p-4 rounded-2xl bg-white hover:bg-slate-50 border border-slate-200/70 shadow-sm hover:shadow-md flex flex-col items-center justify-center gap-2 active:scale-96 transition-all cursor-pointer group"
+          >
+            <div className="text-[#00BCD4] group-hover:scale-110 transition-transform">
+              <RotateCcw className="w-6 h-6 stroke-[2.5]" />
+            </div>
+            <span className="font-black text-xs text-slate-700 tracking-wide text-center">
+              TRANSFER
+            </span>
+          </button>
+
+          {/* TEKLİFLER */}
+          <button
+            id="btn-other-teklifler"
+            onClick={() => setShowTeklifler(true)}
+            className="p-4 rounded-2xl bg-white hover:bg-slate-50 border border-slate-200/70 shadow-sm hover:shadow-md flex flex-col items-center justify-center gap-2 active:scale-96 transition-all cursor-pointer group"
+          >
+            <div className="text-[#00BCD4] group-hover:scale-110 transition-transform">
+              <FileText className="w-6 h-6 stroke-[2]" />
+            </div>
+            <span className="font-black text-xs text-slate-700 tracking-wide text-center">
+              TEKLİFLER
+            </span>
+          </button>
+
+          {/* ÇEK/SENET */}
+          <button
+            id="btn-other-ceksenet"
+            onClick={() => setActiveTab('cek_senet')}
+            className="p-4 rounded-2xl bg-white hover:bg-slate-50 border border-slate-200/70 shadow-sm hover:shadow-md flex flex-col items-center justify-center gap-2 active:scale-96 transition-all cursor-pointer group"
+          >
+            <div className="text-[#00BCD4] group-hover:scale-110 transition-transform">
+              <Eye className="w-6 h-6 stroke-[2]" />
+            </div>
+            <span className="font-black text-xs text-slate-700 tracking-wide text-center">
+              ÇEK/SENET
+            </span>
+          </button>
+
+          {/* CARİ GRUPLARI */}
+          <button
+            id="btn-other-cari-gruplari"
+            onClick={() => setShowCariGruplari(true)}
+            className="p-4 rounded-2xl bg-white hover:bg-slate-50 border border-slate-200/70 shadow-sm hover:shadow-md flex flex-col items-center justify-center gap-2 active:scale-96 transition-all cursor-pointer group"
+          >
+            <div className="text-[#00BCD4] group-hover:scale-110 transition-transform">
+              <Calendar className="w-6 h-6 stroke-[2]" />
+            </div>
+            <span className="font-black text-xs text-slate-700 tracking-wide text-center">
+              CARİ GRUPLARI
+            </span>
+          </button>
+
+          {/* ÜRÜN GRUPLARI */}
+          <button
+            id="btn-other-urun-gruplari"
+            onClick={() => setShowUrunGruplari(true)}
+            className="p-4 rounded-2xl bg-white hover:bg-slate-50 border border-slate-200/70 shadow-sm hover:shadow-md flex flex-col items-center justify-center gap-2 active:scale-96 transition-all cursor-pointer group"
+          >
+            <div className="text-[#00BCD4] group-hover:scale-110 transition-transform">
+              <Wrench className="w-6 h-6 stroke-[2]" />
+            </div>
+            <span className="font-black text-xs text-slate-700 tracking-wide text-center">
+              ÜRÜN GRUPLARI
+            </span>
+          </button>
+
+        </div>
+      </div>
+
+      {/* 4. Secondary Action: Mali Raporlar Button */}
+      <div className="px-4 mt-4">
+        <button
+          onClick={() => setActiveTab('raporlar')}
+          className="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-extrabold text-xs tracking-wider flex items-center justify-center gap-2 shadow-md shadow-blue-500/20 active:scale-98 transition-all"
+        >
+          <TrendingUp className="w-4 h-4" />
+          <span>{aktifYil} YILI MALİ RAPORLAR & ANALİZ</span>
+        </button>
+      </div>
+
+      {/* Modals for secondary actions */}
+      {showStokEkle && <StokEkleModal onClose={() => setShowStokEkle(false)} />}
+      {showTransfer && <TransferModal onClose={() => setShowTransfer(false)} />}
+      {showTeklifler && <TekliflerModal onClose={() => setShowTeklifler(false)} />}
+      {showCariGruplari && <CariGruplariModal onClose={() => setShowCariGruplari(false)} />}
+      {showUrunGruplari && <UrunGruplariModal onClose={() => setShowUrunGruplari(false)} />}
 
     </div>
   );

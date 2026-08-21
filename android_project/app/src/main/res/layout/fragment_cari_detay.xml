@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#F1F5F9"
+    android:padding="16dp">
+
+    <!-- Cari Bilgi Kartı -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#FFFFFF"
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:elevation="2dp">
+
+        <TextView
+            android:id="@+id/tvCariAd"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Müşteri Adı"
+            android:textColor="#0F172A"
+            android:textStyle="bold"
+            android:textSize="18sp" />
+
+        <TextView
+            android:id="@+id/tvCariBakiye"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="Bakiye: 0,00 TL"
+            android:textColor="#1E88E5"
+            android:textStyle="bold"
+            android:textSize="14sp" />
+    </LinearLayout>
+
+    <!-- Ekstre Başlık & Butonlar -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/btnTahsilatEkle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginEnd="4dp"
+            android:backgroundTint="#10B981"
+            android:text="+ Tahsilat"
+            android:textSize="12sp" />
+
+        <Button
+            android:id="@+id/btnOdemeEkle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="4dp"
+            android:backgroundTint="#EF4444"
+            android:text="- Ödeme"
+            android:textSize="12sp" />
+    </LinearLayout>
+
+    <!-- Ekstre Listesi -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvEkstre"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginTop="12dp" />
+</LinearLayout>

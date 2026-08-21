@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#F1F5F9"
+    android:padding="16dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="TEDARİKÇİ SEÇİMİ"
+        android:textColor="#475569"
+        android:textStyle="bold"
+        android:textSize="12sp" />
+
+    <Spinner
+        android:id="@+id/spnrTedarikci"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginTop="6dp"
+        android:background="@android:drawable/btn_dropdown" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvAlimKalemler"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginTop="12dp" />
+
+    <Button
+        android:id="@+id/btnAlimKaydet"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:backgroundTint="#00897B"
+        android:text="ALIM FATURASINI KAYDET"
+        android:textColor="#FFFFFF"
+        android:textStyle="bold" />
+</LinearLayout>

@@ -101,35 +101,35 @@ export const SatisFragment: React.FC = () => {
   };
 
   return (
-    <div className="space-y-3 pb-24">
+    <div className="p-4 space-y-3 pb-20 bg-[#F1F5F9] min-h-full">
       
       {/* If a sale was just completed, show success banner with Thermal & PDF actions */}
       {lastSale && (
-        <div className="p-4 bg-emerald-950/70 border border-emerald-500/40 rounded-2xl space-y-3 animate-in fade-in zoom-in duration-200 text-slate-100">
+        <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-3xl space-y-3 animate-in fade-in zoom-in duration-200 text-slate-800 shadow-md">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
+              <div className="w-9 h-9 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center">
                 <CheckCircle2 className="w-5 h-5" />
               </div>
               <div>
-                <h4 className="font-bold text-xs text-white">Satış Başarıyla Kaydedildi!</h4>
-                <p className="text-[10px] text-emerald-300">
+                <h4 className="font-extrabold text-xs text-slate-900">Satış Başarıyla Kaydedildi!</h4>
+                <p className="text-[11px] text-emerald-700 font-semibold">
                   {lastSale.fatura_no} • {lastSale.net_tutar.toFixed(2)} TL ({lastSale.odeme_turu})
                 </p>
               </div>
             </div>
             <button
               onClick={() => setLastSale(null)}
-              className="text-xs text-slate-400 hover:text-white px-2 py-1 bg-slate-800 rounded-lg"
+              className="text-xs text-slate-500 hover:text-slate-800 px-2.5 py-1 bg-white border border-slate-200 rounded-xl"
             >
               Kapat
             </button>
           </div>
 
-          <div className="p-2.5 bg-slate-900/80 rounded-xl text-[11px] text-slate-300 flex items-center gap-2">
-            <Zap className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+          <div className="p-2.5 bg-white rounded-2xl border border-emerald-100 text-[11px] text-slate-600 flex items-center gap-2">
+            <Zap className="w-3.5 h-3.5 text-amber-500 shrink-0" />
             <span>
-              <strong>PostgreSQL Triggers Çalıştı:</strong> Stoklar depodan düşüldü ve {selectedCari?.ad} bakiyesine işlendi.
+              <strong>Supabase Trigger:</strong> Stoklar depodan düşüldü ve {selectedCari?.ad} bakiyesine işlendi.
             </span>
           </div>
 
@@ -137,15 +137,15 @@ export const SatisFragment: React.FC = () => {
             <button
               id="btn-print-thermal-after-sale"
               onClick={handlePrintThermal}
-              className="flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl bg-emerald-500 text-slate-950 font-bold text-xs hover:bg-emerald-400 shadow-md shadow-emerald-500/20"
+              className="flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-2xl bg-[#1E88E5] text-white font-extrabold text-xs shadow-md shadow-blue-500/20 active:scale-95 transition-all"
             >
               <Printer className="w-4 h-4" />
-              <span>Termal Fiş Bas (58mm)</span>
+              <span>Termal Fiş (58mm)</span>
             </button>
             <button
               id="btn-print-pdf-after-sale"
               onClick={handlePrintPdf}
-              className="flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl bg-blue-600 text-white font-bold text-xs hover:bg-blue-500 shadow-md shadow-blue-600/20"
+              className="flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-2xl bg-[#00897B] text-white font-extrabold text-xs shadow-md shadow-teal-500/20 active:scale-95 transition-all"
             >
               <FileText className="w-4 h-4" />
               <span>A4 PDF Fatura</span>
@@ -154,14 +154,14 @@ export const SatisFragment: React.FC = () => {
         </div>
       )}
 
-      {/* 1. Select Customer (Cari Seçici) */}
-      <div className="bg-slate-900 p-3.5 rounded-2xl border border-slate-800 space-y-2">
-        <label className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center justify-between">
+      {/* 1. Customer Selector */}
+      <div className="bg-white p-3.5 rounded-3xl border border-slate-200/70 shadow-xs space-y-2">
+        <label className="text-xs font-bold text-slate-600 flex items-center justify-between">
           <span className="flex items-center gap-1.5">
-            <User className="w-3.5 h-3.5 text-purple-400" />
+            <User className="w-3.5 h-3.5 text-[#1E88E5]" />
             <span>Müşteri / Cari Seçimi</span>
           </span>
-          <span className="text-[10px] text-slate-400 font-normal">
+          <span className="text-[10px] text-slate-500 font-semibold">
             Bakiye: {(selectedCari?.bakiye || 0).toFixed(2)} TL
           </span>
         </label>
@@ -169,7 +169,7 @@ export const SatisFragment: React.FC = () => {
         <select
           value={selectedCariId}
           onChange={e => setSelectedCariId(e.target.value)}
-          className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white font-semibold focus:ring-2 focus:ring-purple-500 outline-hidden"
+          className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-3 py-2 text-xs text-slate-800 font-bold focus:ring-2 focus:ring-[#1E88E5] outline-hidden"
         >
           {yearCariler.map(c => (
             <option key={c.id} value={c.id}>
@@ -179,204 +179,167 @@ export const SatisFragment: React.FC = () => {
         </select>
       </div>
 
-      {/* 2. Product Fast Search & Add Grid */}
-      <div className="bg-slate-900 p-3.5 rounded-2xl border border-slate-800 space-y-2.5">
-        <div className="relative">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-          <input
-            type="text"
-            placeholder="Sepete eklemek için ürün veya barkod ara..."
-            value={productSearch}
-            onChange={e => setProductSearch(e.target.value)}
-            className="w-full bg-slate-800 border border-slate-700 rounded-xl pl-9 pr-3 py-2 text-xs text-white placeholder-slate-500 focus:ring-2 focus:ring-emerald-500 outline-hidden"
-          />
-        </div>
-
-        {productSearch && (
-          <div className="max-h-40 overflow-y-auto space-y-1 divide-y divide-slate-800/60 bg-slate-850 p-2 rounded-xl border border-slate-700/60">
-            {filteredStoklar.length > 0 ? (
-              filteredStoklar.map(stk => (
-                <div
-                  key={stk.id}
-                  onClick={() => {
-                    addToCart(stk, 1);
-                    setProductSearch('');
-                  }}
-                  className="p-2 flex items-center justify-between cursor-pointer hover:bg-slate-800 rounded-lg text-xs"
-                >
-                  <div>
-                    <span className="font-semibold text-slate-200 block">{stk.ad}</span>
-                    <span className="text-[10px] text-slate-400 font-mono">
-                      Barkod: {stk.barkod || '-'} • Depo: {stk.miktar} {stk.birim}
-                    </span>
-                  </div>
-                  <span className="font-bold text-emerald-400">{stk.satis_fiyati.toFixed(2)} TL</span>
-                </div>
-              ))
-            ) : (
-              <div className="p-2 text-center text-slate-400 text-xs">Eşleşen ürün bulunamadı</div>
-            )}
-          </div>
-        )}
-      </div>
-
-      {/* 3. Shopping Cart (Sepet Listesi - Matching item_sepet.xml) */}
-      <div className="bg-slate-900 rounded-2xl border border-slate-800 p-4 space-y-3">
-        <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
-          <div className="flex items-center gap-2 font-bold text-xs text-slate-200">
-            <ShoppingCart className="w-4 h-4 text-emerald-400" />
-            <span>Satış Sepeti ({cart.length} Kalem)</span>
+      {/* 2. Cart Items */}
+      <div className="bg-white p-3.5 rounded-3xl border border-slate-200/70 shadow-xs space-y-2.5">
+        <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+          <div className="flex items-center gap-1.5">
+            <ShoppingCart className="w-4 h-4 text-[#1E88E5]" />
+            <h3 className="font-extrabold text-xs text-slate-800">
+              Satış Sepeti ({cart.length} Kalem)
+            </h3>
           </div>
           {cart.length > 0 && (
             <button
               onClick={clearCart}
-              className="text-[11px] text-red-400 hover:text-red-300 font-semibold flex items-center gap-1"
+              className="text-[10px] text-red-500 hover:text-red-700 font-bold"
             >
-              <Trash2 className="w-3 h-3" />
-              <span>Sepeti Boşalt</span>
+              Sepeti Boşalt
             </button>
           )}
         </div>
 
         {cart.length > 0 ? (
-          <div className="space-y-2.5">
+          <div className="space-y-2 max-h-48 overflow-y-auto no-scrollbar pr-1">
             {cart.map(item => (
               <div
                 key={item.stok.id}
-                className="p-3 rounded-xl bg-slate-850 border border-slate-800 flex items-center justify-between gap-3 text-xs"
+                className="p-2.5 bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-between gap-2"
               >
                 <div className="min-w-0 flex-1">
-                  <h5 className="font-bold text-slate-200 truncate">{item.stok.ad}</h5>
-                  <span className="text-[10px] text-slate-400">
-                    Birim: {item.birim_fiyat.toFixed(2)} TL • Kalan Depo: {item.stok.miktar}
-                  </span>
+                  <h4 className="font-extrabold text-xs text-slate-800 truncate">{item.stok.ad}</h4>
+                  <div className="text-[10px] text-slate-500">
+                    {item.fiyat.toFixed(2)} TL x {item.miktar} ={' '}
+                    <strong className="text-slate-800 font-extrabold">{(item.fiyat * item.miktar).toFixed(2)} TL</strong>
+                  </div>
                 </div>
 
-                {/* Quantity Controls */}
-                <div className="flex items-center gap-2 bg-slate-900 border border-slate-700 rounded-lg p-1">
-                  <button
-                    onClick={() => updateCartQuantity(item.stok.id, item.miktar - 1)}
-                    className="w-6 h-6 rounded flex items-center justify-center text-slate-300 hover:bg-slate-800"
-                  >
-                    <Minus className="w-3 h-3" />
-                  </button>
-                  <span className="font-bold text-white px-1 text-xs">{item.miktar}</span>
-                  <button
-                    onClick={() => updateCartQuantity(item.stok.id, item.miktar + 1)}
-                    className="w-6 h-6 rounded flex items-center justify-center text-slate-300 hover:bg-slate-800"
-                  >
-                    <Plus className="w-3 h-3" />
-                  </button>
-                </div>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <div className="flex items-center bg-white border border-slate-200 rounded-xl">
+                    <button
+                      onClick={() => updateCartQuantity(item.stok.id, item.miktar - 1)}
+                      className="w-6 h-6 flex items-center justify-center text-slate-600 hover:bg-slate-100 rounded-l-xl"
+                    >
+                      <Minus className="w-3 h-3" />
+                    </button>
+                    <span className="w-7 text-center font-bold text-xs text-slate-800">
+                      {item.miktar}
+                    </span>
+                    <button
+                      onClick={() => updateCartQuantity(item.stok.id, item.miktar + 1)}
+                      className="w-6 h-6 flex items-center justify-center text-slate-600 hover:bg-slate-100 rounded-r-xl"
+                    >
+                      <Plus className="w-3 h-3" />
+                    </button>
+                  </div>
 
-                {/* Item Total */}
-                <div className="text-right shrink-0">
-                  <span className="font-extrabold text-xs text-emerald-400 block">
-                    {item.toplam_tutar.toFixed(2)} TL
-                  </span>
                   <button
                     onClick={() => removeFromCart(item.stok.id)}
-                    className="text-[10px] text-slate-500 hover:text-red-400"
+                    className="w-7 h-7 text-red-500 hover:bg-red-50 rounded-xl flex items-center justify-center"
                   >
-                    Sil
+                    <Trash2 className="w-3.5 h-3.5" />
                   </button>
                 </div>
               </div>
             ))}
           </div>
         ) : (
-          <div className="py-10 text-center text-xs text-slate-400">
-            Sepetiniz boş. Yukarıdaki aramadan ürün seçin veya stok listesinden ekleyin.
+          <div className="py-6 text-center text-slate-400 text-xs">
+            Sepetiniz boş. Aşağıdaki listeden ürün ekleyin.
+          </div>
+        )}
+
+        {/* Total & Payment Options */}
+        {cart.length > 0 && (
+          <div className="pt-2 border-t border-slate-100 space-y-2.5">
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="text-[10px] font-bold text-slate-500 block mb-1">İskonto / İndirim (TL)</label>
+                <input
+                  type="number"
+                  min="0"
+                  value={iskonto || ''}
+                  onChange={e => setIskonto(parseFloat(e.target.value) || 0)}
+                  placeholder="0.00"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs text-slate-800 font-bold outline-hidden"
+                />
+              </div>
+              <div>
+                <label className="text-[10px] font-bold text-slate-500 block mb-1">Ödeme Türü</label>
+                <select
+                  value={odemeTuru}
+                  onChange={e => setOdemeTuru(e.target.value as any)}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs text-slate-800 font-bold outline-hidden"
+                >
+                  <option value="VERESIYE">Veresiye (Açık Hesap)</option>
+                  <option value="NAKIT">Nakit (Kasa Girişi)</option>
+                  <option value="KREDI_KARTI">Kredi Kartı / POS</option>
+                  <option value="HAVALE">Havale / EFT</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="p-3 bg-blue-50 rounded-2xl border border-blue-100 flex items-center justify-between">
+              <div>
+                <span className="text-[10px] text-blue-700 font-bold block">ÖDENECEK NET TUTAR</span>
+                <span className="text-xl font-black text-[#1E88E5]">
+                  {netTotal.toLocaleString('tr-TR', { minimumFractionDigits: 2 })} TL
+                </span>
+              </div>
+
+              <button
+                id="btn-complete-sale"
+                disabled={isProcessing}
+                onClick={handleCompleteSale}
+                className="px-5 py-3 rounded-2xl bg-[#1E88E5] hover:bg-[#1976D2] text-white font-extrabold text-xs shadow-lg shadow-blue-600/30 active:scale-95 transition-all flex items-center gap-1.5"
+              >
+                {isProcessing ? (
+                  <span>Kaydediliyor...</span>
+                ) : (
+                  <>
+                    <span>Satışı Tamamla</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         )}
       </div>
 
-      {/* 4. Payment & Discount Options */}
-      {cart.length > 0 && (
-        <div className="bg-slate-900 rounded-2xl border border-slate-800 p-4 space-y-3 text-xs">
-          
-          {/* Payment Type */}
-          <div>
-            <label className="block font-semibold text-slate-400 mb-1.5">Ödeme Türü</label>
-            <div className="grid grid-cols-4 gap-1.5">
-              {[
-                { id: 'VERESIYE', label: 'Veresiye (Açık Hesap)' },
-                { id: 'NAKIT', label: 'Nakit Kasa' },
-                { id: 'KREDI_KARTI', label: 'Kredi Kartı' },
-                { id: 'HAVALE', label: 'Banka / Havale' }
-              ].map(opt => (
-                <button
-                  key={opt.id}
-                  type="button"
-                  onClick={() => setOdemeTuru(opt.id as any)}
-                  className={`py-2 px-1.5 rounded-xl font-bold text-center border transition-all text-[11px] ${
-                    odemeTuru === opt.id
-                      ? 'bg-emerald-500 text-slate-950 border-emerald-400 shadow-sm'
-                      : 'bg-slate-850 text-slate-400 border-slate-800 hover:text-slate-200'
-                  }`}
-                >
-                  {opt.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Discount & Note */}
-          <div className="grid grid-cols-2 gap-3 pt-1">
-            <div>
-              <label className="block font-semibold text-slate-400 mb-1">İskonto / İndirim (TL)</label>
-              <input
-                type="number"
-                step="0.01"
-                placeholder="0.00"
-                value={iskonto || ''}
-                onChange={e => setIskonto(parseFloat(e.target.value) || 0)}
-                className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white font-bold outline-hidden"
-              />
-            </div>
-
-            <div>
-              <label className="block font-semibold text-slate-400 mb-1">Fatura Açıklaması</label>
-              <input
-                type="text"
-                placeholder="Açıklama (opsiyonel)"
-                value={aciklama}
-                onChange={e => setAciklama(e.target.value)}
-                className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white outline-hidden"
-              />
-            </div>
-          </div>
-
-          {/* Final Totals Box */}
-          <div className="bg-slate-850 p-3.5 rounded-xl border border-slate-800 space-y-1.5">
-            <div className="flex justify-between text-slate-400 text-xs">
-              <span>Ara Toplam:</span>
-              <span>{cartTotal.toFixed(2)} TL</span>
-            </div>
-            {iskonto > 0 && (
-              <div className="flex justify-between text-red-400 text-xs">
-                <span>İskonto İndirimi:</span>
-                <span>-{iskonto.toFixed(2)} TL</span>
-              </div>
-            )}
-            <div className="flex justify-between text-base font-black text-white border-t border-slate-700 pt-2">
-              <span>ÖDENECEK TUTAR:</span>
-              <span className="text-emerald-400">{netTotal.toFixed(2)} TL</span>
-            </div>
-          </div>
-
-          {/* Complete Button */}
-          <button
-            id="btn-complete-sale"
-            onClick={handleCompleteSale}
-            disabled={isProcessing}
-            className="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-black text-sm shadow-xl shadow-emerald-500/20 flex items-center justify-center gap-2 active:scale-98 transition-all"
-          >
-            <PackageCheck className="w-5 h-5" />
-            <span>{isProcessing ? 'Veritabanı İşleniyor...' : 'SATIŞI TAMAMLA (TRIGGER ÇALIŞTIR)'}</span>
-          </button>
+      {/* 3. Product Catalog to Add to Cart */}
+      <div className="bg-white p-3.5 rounded-3xl border border-slate-200/70 shadow-xs space-y-2">
+        <h3 className="font-extrabold text-xs text-slate-800">Ürün Listesinden Ekle</h3>
+        
+        <div className="relative">
+          <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+          <input
+            type="text"
+            placeholder="Hızlı ürün ara..."
+            value={productSearch}
+            onChange={e => setProductSearch(e.target.value)}
+            className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-8 pr-3 py-2 text-xs text-slate-800 outline-hidden"
+          />
         </div>
-      )}
+
+        <div className="space-y-1.5 max-h-52 overflow-y-auto no-scrollbar">
+          {filteredStoklar.map(stok => (
+            <div
+              key={stok.id}
+              onClick={() => addToCart(stok, 1)}
+              className="p-2 bg-slate-50 hover:bg-blue-50/70 border border-slate-100 hover:border-blue-200 rounded-2xl cursor-pointer flex items-center justify-between transition-all"
+            >
+              <div className="min-w-0">
+                <span className="font-bold text-xs text-slate-800 truncate block">{stok.ad}</span>
+                <span className="text-[10px] text-slate-500">Stok: {stok.miktar} {stok.birim}</span>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <span className="font-extrabold text-xs text-slate-900">{stok.satis_fiyati.toFixed(2)} TL</span>
+                <span className="w-6 h-6 rounded-lg bg-[#1E88E5] text-white flex items-center justify-center text-xs font-bold">+</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
 
     </div>
   );
