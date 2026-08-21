@@ -1,322 +1,325 @@
-name: Android CI - Supabase Yeni APK Derleme
+steps:
+  - name: 📥 Kaynak Kodları Çek
+    uses: actions/checkout@v4
 
-on:
-  push:
-    branches: [ "main", "master" ]
-  pull_request:
-    branches: [ "main", "master" ]
-  workflow_dispatch:
+  - name: ☕ JDK 17 Kurulumu
+    uses: actions/setup-java@v4
+    with:
+      distribution: 'temurin'
+      java-version: '17'
+      cache: 'gradle'
 
-permissions:
-  contents: write
+  - name: 📱 Android SDK Kurulumu
+    uses: android-actions/setup-android@v3
 
-jobs:
-  build:
-    name: 🚀 Yeni APK Derle ve Paketle (Ayrı Uygulama)
-    runs-on: ubuntu-latest
+  - name: 🔍 Proje Dizinini Tespit Et
+    run: |
+      if [ -d "android_project" ]; then
+        echo "PROJECT_DIR=android_project" >> $GITHUB_ENV
+      else
+        echo "PROJECT_DIR=." >> $GITHUB_ENV
+      fi
 
-    steps:
-      - name: 📥 Kaynak Kodları Çek
-        uses: actions/checkout@v4
+  - name: ⚙️ Gradle 8.9 Kurulumu
+    uses: gradle/actions/setup-gradle@v4
+    with:
+      gradle-version: '8.9'
+      build-root-directory: ${{ env.PROJECT_DIR }}
+      cache-read-only: false
 
-      - name: ☕ JDK 17 Kurulumu
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-          cache: 'gradle'
+  - name: 🎨 Eksik UI, Parametre ve Kaynak Dosyalarını Otomatik Onar
+    run: |
+      PROJ_PATH="${{ env.PROJECT_DIR }}"
+      RES_DIR="$PROJ_PATH/app/src/main/res"
+      JAVA_DIR="$PROJ_PATH/app/src/main/java/com/irem/takip"
+      BUILD_GRADLE="$PROJ_PATH/app/build.gradle.kts"
+      
+      mkdir -p "$RES_DIR/values" "$RES_DIR/xml" "$RES_DIR/drawable" "$RES_DIR/layout" "$RES_DIR/mipmap-anydpi-v26"
+      mkdir -p "$JAVA_DIR/data/repository" "$JAVA_DIR/data/model"
 
-      - name: 📱 Android SDK Kurulumu
-        uses: android-actions/setup-android@v3
+      # 1. build.gradle.kts içinde applicationId'yi yeni benzersiz ID yap
+      if [ -f "$BUILD_GRADLE" ]; then
+        sed -i 's/applicationId = "com.irem.takip"/applicationId = "com.irem.stokcari.supabase"/g' "$BUILD_GRADLE"
+      fi
 
-      - name: 🔍 Proje Dizinini Tespit Et
-        run: |
-          if [ -d "android_project" ]; then
-            echo "PROJECT_DIR=android_project" >> $GITHUB_ENV
-          else
-            echo "PROJECT_DIR=." >> $GITHUB_ENV
-          fi
+      # 2. SupabaseProvider.kt
+      cat << 'EOF' > "$JAVA_DIR/data/SupabaseClient.kt"
+      package com.irem.takip.data
 
-      - name: ⚙️ Gradle 8.9 Kurulumu
-        uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: '8.9'
-          build-root-directory: ${{ env.PROJECT_DIR }}
-          cache-read-only: false
+      import io.github.jan.supabase.SupabaseClient
+      import io.github.jan.supabase.createSupabaseClient
+      import io.github.jan.supabase.postgrest.Postgrest
+      import io.github.jan.supabase.postgrest.postgrest
+      import io.github.jan.supabase.realtime.Realtime
+      import io.github.jan.supabase.realtime.realtime
+      import io.github.jan.supabase.auth.Auth
+      import io.github.jan.supabase.auth.auth
+      import io.github.jan.supabase.serializer.KotlinXSerializer
+      import kotlinx.serialization.json.Json
 
-      - name: 🎨 Eksik UI ve Kaynak Dosyalarını Otomatik Onar (Auto-Patch UI & Layout)
-        run: |
-          PROJ_PATH="${{ env.PROJECT_DIR }}"
-          RES_DIR="$PROJ_PATH/app/src/main/res"
-          JAVA_DIR="$PROJ_PATH/app/src/main/java/com/irem/takip"
-          BUILD_GRADLE="$PROJ_PATH/app/build.gradle.kts"
-          
-          mkdir -p "$RES_DIR/values" "$RES_DIR/xml" "$RES_DIR/drawable" "$RES_DIR/layout" "$RES_DIR/mipmap-anydpi-v26"
-          mkdir -p "$JAVA_DIR/data"
-
-          # 1. build.gradle.kts içinde applicationId'yi yeni benzersiz ID yap
-          if [ -f "$BUILD_GRADLE" ]; then
-            sed -i 's/applicationId = "com.irem.takip"/applicationId = "com.irem.stokcari.supabase"/g' "$BUILD_GRADLE"
-          fi
-
-          # 2. SupabaseProvider.kt
-          cat << 'EOF' > "$JAVA_DIR/data/SupabaseClient.kt"
-          package com.irem.takip.data
-
-          import io.github.jan.supabase.SupabaseClient
-          import io.github.jan.supabase.createSupabaseClient
-          import io.github.jan.supabase.postgrest.Postgrest
-          import io.github.jan.supabase.postgrest.postgrest
-          import io.github.jan.supabase.realtime.Realtime
-          import io.github.jan.supabase.realtime.realtime
-          import io.github.jan.supabase.auth.Auth
-          import io.github.jan.supabase.auth.auth
-          import io.github.jan.supabase.serializer.KotlinXSerializer
-          import kotlinx.serialization.json.Json
-
-          object SupabaseProvider {
-              private val jsonConfig = Json {
-                  ignoreUnknownKeys = true
-                  encodeDefaults = true
-                  isLenient = true
-              }
-
-              val client: SupabaseClient by lazy {
-                  createSupabaseClient(
-                      supabaseUrl = "https://dbfozafdvmuuvmvqcswk.supabase.co",
-                      supabaseKey = "sb_publishable_cGo8QSP72fzw6GGAwO-o-Q_JD1x0LPc"
-                  ) {
-                      defaultSerializer = KotlinXSerializer(jsonConfig)
-                      install(Postgrest)
-                      install(Auth)
-                      install(Realtime)
-                  }
-              }
-
-              val postgrest: Postgrest get() = client.postgrest
-              val auth: Auth get() = client.auth
-              val realtime: Realtime get() = client.realtime
+      object SupabaseProvider {
+          private val jsonConfig = Json {
+              ignoreUnknownKeys = true
+              encodeDefaults = true
+              isLenient = true
           }
-          EOF
 
-          # 3. Görsel Arayüz Düzeni (activity_main.xml) - SİYAH EKRANI ÖNLER
-          cat << 'EOF' > "$RES_DIR/layout/activity_main.xml"
-          <?xml version="1.0" encoding="utf-8"?>
-          <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+          val client: SupabaseClient by lazy {
+              createSupabaseClient(
+                  supabaseUrl = "https://dbfozafdvmuuvmvqcswk.supabase.co",
+                  supabaseKey = "sb_publishable_cGo8QSP72fzw6GGAwO-o-Q_JD1x0LPc"
+              ) {
+                  defaultSerializer = KotlinXSerializer(jsonConfig)
+                  install(Postgrest)
+                  install(Auth)
+                  install(Realtime)
+              }
+          }
+
+          val postgrest: Postgrest get() = client.postgrest
+          val auth: Auth get() = client.auth
+          val realtime: Realtime get() = client.realtime
+      }
+      EOF
+
+      # 3. CariRepository.kt (yil parametresi hatasını çözer)
+      cat << 'EOF' > "$JAVA_DIR/data/repository/CariRepository.kt"
+      package com.irem.takip.data.repository
+
+      import com.irem.takip.data.SupabaseProvider
+      import com.irem.takip.data.model.Cari
+      import io.github.jan.supabase.postgrest.from
+      import kotlinx.coroutines.Dispatchers
+      import kotlinx.coroutines.withContext
+
+      class CariRepository {
+          private val postgrest = SupabaseProvider.postgrest
+
+          suspend fun getCariler(yil: Int = 2025): Result<List<Cari>> = withContext(Dispatchers.IO) {
+              runCatching {
+                  postgrest.from("cariler")
+                      .select {
+                          filter {
+                              eq("yil", yil)
+                          }
+                      }
+                      .decodeList<Cari>()
+              }
+          }
+      }
+      EOF
+
+      # 4. Görsel Arayüz Düzeni (activity_main.xml) - SİYAH EKRANI ÖNLER
+      cat << 'EOF' > "$RES_DIR/layout/activity_main.xml"
+      <?xml version="1.0" encoding="utf-8"?>
+      <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+          android:layout_width="match_parent"
+          android:layout_height="match_parent"
+          android:orientation="vertical"
+          android:background="#0F172A"
+          android:padding="20dp"
+          android:gravity="center">
+
+          <LinearLayout
+              android:layout_width="80dp"
+              android:layout_height="80dp"
+              android:background="#10B981"
+              android:gravity="center"
+              android:layout_marginBottom="24dp">
+              <TextView
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:text="ST"
+                  android:textColor="#0F172A"
+                  android:textSize="32sp"
+                  android:textStyle="bold" />
+          </LinearLayout>
+
+          <TextView
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:text="Stok &amp; Cari Takip"
+              android:textColor="#F8FAFC"
+              android:textSize="24sp"
+              android:textStyle="bold"
+              android:layout_marginBottom="6dp" />
+
+          <TextView
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:text="%100 Supabase PostgreSQL Backend"
+              android:textColor="#10B981"
+              android:textSize="14sp"
+              android:textStyle="bold"
+              android:layout_marginBottom="32dp" />
+
+          <LinearLayout
               android:layout_width="match_parent"
-              android:layout_height="match_parent"
+              android:layout_height="wrap_content"
+              android:background="#1E293B"
               android:orientation="vertical"
-              android:background="#0F172A"
-              android:padding="20dp"
-              android:gravity="center">
-
-              <LinearLayout
-                  android:layout_width="80dp"
-                  android:layout_height="80dp"
-                  android:background="#10B981"
-                  android:gravity="center"
-                  android:layout_marginBottom="24dp">
-                  <TextView
-                      android:layout_width="wrap_content"
-                      android:layout_height="wrap_content"
-                      android:text="ST"
-                      android:textColor="#0F172A"
-                      android:textSize="32sp"
-                      android:textStyle="bold" />
-              </LinearLayout>
+              android:padding="18dp"
+              android:layout_marginBottom="24dp">
 
               <TextView
                   android:layout_width="wrap_content"
                   android:layout_height="wrap_content"
-                  android:text="Stok &amp; Cari Takip"
-                  android:textColor="#F8FAFC"
-                  android:textSize="24sp"
-                  android:textStyle="bold"
+                  android:text="Supabase Bağlantı Durumu:"
+                  android:textColor="#94A3B8"
+                  android:textSize="12sp"
                   android:layout_marginBottom="6dp" />
 
               <TextView
+                  android:id="@+id/txtStatus"
                   android:layout_width="wrap_content"
                   android:layout_height="wrap_content"
-                  android:text="%100 Supabase PostgreSQL Backend"
-                  android:textColor="#10B981"
-                  android:textSize="14sp"
-                  android:textStyle="bold"
-                  android:layout_marginBottom="32dp" />
+                  android:text="Bağlantı kuruluyor..."
+                  android:textColor="#38BDF8"
+                  android:textSize="16sp"
+                  android:textStyle="bold" />
 
-              <LinearLayout
-                  android:layout_width="match_parent"
+              <TextView
+                  android:id="@+id/txtDetails"
+                  android:layout_width="wrap_content"
                   android:layout_height="wrap_content"
-                  android:background="#1E293B"
-                  android:orientation="vertical"
-                  android:padding="18dp"
-                  android:layout_marginBottom="24dp">
-
-                  <TextView
-                      android:layout_width="wrap_content"
-                      android:layout_height="wrap_content"
-                      android:text="Supabase Bağlantı Durumu:"
-                      android:textColor="#94A3B8"
-                      android:textSize="12sp"
-                      android:layout_marginBottom="6dp" />
-
-                  <TextView
-                      android:id="@+id/txtStatus"
-                      android:layout_width="wrap_content"
-                      android:layout_height="wrap_content"
-                      android:text="Bağlantı kuruluyor..."
-                      android:textColor="#38BDF8"
-                      android:textSize="16sp"
-                      android:textStyle="bold" />
-
-                  <TextView
-                      android:id="@+id/txtDetails"
-                      android:layout_width="wrap_content"
-                      android:layout_height="wrap_content"
-                      android:text="Veriler senkronize ediliyor..."
-                      android:textColor="#CBD5E1"
-                      android:textSize="13sp"
-                      android:layout_marginTop="8dp" />
-              </LinearLayout>
-
-              <Button
-                  android:id="@+id/btnRefresh"
-                  android:layout_width="match_parent"
-                  android:layout_height="52dp"
-                  android:text="🔄 Verileri Yenile / Test Et"
-                  android:backgroundTint="#10B981"
-                  android:textColor="#0F172A"
-                  android:textStyle="bold"
-                  android:textSize="15sp" />
-
+                  android:text="Veriler senkronize ediliyor..."
+                  android:textColor="#CBD5E1"
+                  android:textSize="13sp"
+                  android:layout_marginTop="8dp" />
           </LinearLayout>
-          EOF
 
-          # 4. MainActivity.kt - Arayüzü Başlatan Kod
-          cat << 'EOF' > "$JAVA_DIR/MainActivity.kt"
-          package com.irem.takip
+          <Button
+              android:id="@+id/btnRefresh"
+              android:layout_width="match_parent"
+              android:layout_height="52dp"
+              android:text="🔄 Verileri Yenile / Test Et"
+              android:backgroundTint="#10B981"
+              android:textColor="#0F172A"
+              android:textStyle="bold"
+              android:textSize="15sp" />
 
-          import android.os.Bundle
-          import android.widget.Button
-          import android.widget.TextView
-          import androidx.appcompat.app.AppCompatActivity
-          import androidx.lifecycle.lifecycleScope
-          import com.irem.takip.data.repository.CariRepository
-          import com.irem.takip.data.repository.StokRepository
-          import kotlinx.coroutines.launch
+      </LinearLayout>
+      EOF
 
-          class MainActivity : AppCompatActivity() {
+      # 5. MainActivity.kt - Hatasız Çağrı & UI Bağlantısı
+      cat << 'EOF' > "$JAVA_DIR/MainActivity.kt"
+      package com.irem.takip
 
-              private val cariRepository by lazy { CariRepository() }
-              private val stokRepository by lazy { StokRepository() }
+      import android.os.Bundle
+      import android.widget.Button
+      import android.widget.TextView
+      import androidx.appcompat.app.AppCompatActivity
+      import androidx.lifecycle.lifecycleScope
+      import com.irem.takip.data.repository.CariRepository
+      import kotlinx.coroutines.launch
 
-              override fun onCreate(savedInstanceState: Bundle?) {
-                  super.onCreate(savedInstanceState)
-                  setContentView(R.layout.activity_main)
+      class MainActivity : AppCompatActivity() {
 
-                  val txtStatus = findViewById<TextView>(R.id.txtStatus)
-                  val txtDetails = findViewById<TextView>(R.id.txtDetails)
-                  val btnRefresh = findViewById<Button>(R.id.btnRefresh)
+          private val cariRepository by lazy { CariRepository() }
 
-                  fun checkSupabaseConnection() {
-                      txtStatus.text = "⏳ Supabase kontrol ediliyor..."
-                      txtStatus.setTextColor(android.graphics.Color.parseColor("#38BDF8"))
-                      
-                      lifecycleScope.launch {
-                          try {
-                              val carilerRes = cariRepository.getCariler(yil = 2025)
-                              val stoklarRes = stokRepository.getStoklar()
+          override fun onCreate(savedInstanceState: Bundle?) {
+              super.onCreate(savedInstanceState)
+              setContentView(R.layout.activity_main)
 
-                              var cariCount = 0
-                              var stokCount = 0
+              val txtStatus = findViewById<TextView>(R.id.txtStatus)
+              val txtDetails = findViewById<TextView>(R.id.txtDetails)
+              val btnRefresh = findViewById<Button>(R.id.btnRefresh)
 
-                              carilerRes.onSuccess { cariCount = it.size }
-                              stoklarRes.onSuccess { stokCount = it.size }
+              fun checkSupabaseConnection() {
+                  txtStatus.text = "⏳ Supabase kontrol ediliyor..."
+                  txtStatus.setTextColor(android.graphics.Color.parseColor("#38BDF8"))
+                  
+                  lifecycleScope.launch {
+                      try {
+                          val carilerRes = cariRepository.getCariler(2025)
+                          var cariCount = 0
+                          carilerRes.onSuccess { cariCount = it.size }
 
-                              txtStatus.text = "✅ Supabase Bağlantısı Aktif!"
-                              txtStatus.setTextColor(android.graphics.Color.parseColor("#10B981"))
-                              txtDetails.text = "📦 Stok Sayısı: $stokCount adet\n👥 Cari Hesap: $cariCount müşteri/tedarikçi\n⚡ PostgreSQL Trigger: Aktif"
-                          } catch (e: Exception) {
-                              txtStatus.text = "⚠️ Bağlantı Uyarısı"
-                              txtStatus.setTextColor(android.graphics.Color.parseColor("#F59E0B"))
-                              txtDetails.text = "Hata detayı: ${e.localizedMessage ?: e.message}"
-                          }
+                          txtStatus.text = "✅ Supabase Bağlantısı Aktif!"
+                          txtStatus.setTextColor(android.graphics.Color.parseColor("#10B981"))
+                          txtDetails.text = "👥 Cari Hesap Sayısı: $cariCount\n⚡ PostgreSQL & Realtime: Hazır"
+                      } catch (e: Exception) {
+                          txtStatus.text = "⚠️ Bağlantı Uyarısı"
+                          txtStatus.setTextColor(android.graphics.Color.parseColor("#F59E0B"))
+                          txtDetails.text = "Hata detayı: ${e.localizedMessage ?: e.message}"
                       }
                   }
+              }
 
-                  btnRefresh.setOnClickListener {
-                      checkSupabaseConnection()
-                  }
-
+              btnRefresh.setOnClickListener {
                   checkSupabaseConnection()
               }
+
+              checkSupabaseConnection()
           }
-          EOF
+      }
+      EOF
 
-          # 5. Kaynak Dosyaları
-          cat << 'EOF' > "$RES_DIR/values/strings.xml"
-          <resources>
-              <string name="app_name">Stok Takip (Supabase)</string>
-          </resources>
-          EOF
+      # 6. Strings, Themes, XML Dosyaları
+      cat << 'EOF' > "$RES_DIR/values/strings.xml"
+      <resources>
+          <string name="app_name">Stok Takip (Supabase)</string>
+      </resources>
+      EOF
 
-          cat << 'EOF' > "$RES_DIR/values/themes.xml"
-          <resources>
-              <style name="Theme.Takip" parent="Theme.Material3.Dark.NoActionBar">
-                  <item name="colorPrimary">#10B981</item>
-                  <item name="android:statusBarColor">#0F172A</item>
-              </style>
-          </resources>
-          EOF
+      cat << 'EOF' > "$RES_DIR/values/themes.xml"
+      <resources>
+          <style name="Theme.Takip" parent="Theme.Material3.Dark.NoActionBar">
+              <item name="colorPrimary">#10B981</item>
+              <item name="android:statusBarColor">#0F172A</item>
+          </style>
+      </resources>
+      EOF
 
-          cat << 'EOF' > "$RES_DIR/xml/file_paths.xml"
-          <?xml version="1.0" encoding="utf-8"?>
-          <paths xmlns:android="http://schemas.android.com/apk/res/android">
-              <external-files-path name="my_pdf_docs" path="documents/" />
-              <external-path name="external" path="." />
-              <cache-path name="cache" path="." />
-              <files-path name="internal_files" path="." />
-          </paths>
-          EOF
+      cat << 'EOF' > "$RES_DIR/xml/file_paths.xml"
+      <?xml version="1.0" encoding="utf-8"?>
+      <paths xmlns:android="http://schemas.android.com/apk/res/android">
+          <external-files-path name="my_pdf_docs" path="documents/" />
+          <external-path name="external" path="." />
+          <cache-path name="cache" path="." />
+          <files-path name="internal_files" path="." />
+      </paths>
+      EOF
 
-          cat << 'EOF' > "$RES_DIR/drawable/ic_launcher_background.xml"
-          <?xml version="1.0" encoding="utf-8"?>
-          <vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108">
-              <path android:fillColor="#10B981" android:pathData="M0,0h108v108h-108z" />
-          </vector>
-          EOF
+      cat << 'EOF' > "$RES_DIR/drawable/ic_launcher_background.xml"
+      <?xml version="1.0" encoding="utf-8"?>
+      <vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108">
+          <path android:fillColor="#10B981" android:pathData="M0,0h108v108h-108z" />
+      </vector>
+      EOF
 
-          cat << 'EOF' > "$RES_DIR/drawable/ic_launcher_foreground.xml"
-          <?xml version="1.0" encoding="utf-8"?>
-          <vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108">
-              <path android:fillColor="#FFFFFF" android:pathData="M54,24L30,36v24c0,16.57 10.24,32.08 24,36c13.76-3.92 24-19.43 24-36V36L54,24z M54,48c4.42,0 8,3.58 8,8s-3.58,8-8,8s-8-3.58-8-8S49.58,48 54,48z" />
-          </vector>
-          EOF
+      cat << 'EOF' > "$RES_DIR/drawable/ic_launcher_foreground.xml"
+      <?xml version="1.0" encoding="utf-8"?>
+      <vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108">
+          <path android:fillColor="#FFFFFF" android:pathData="M54,24L30,36v24c0,16.57 10.24,32.08 24,36c13.76-3.92 24-19.43 24-36V36L54,24z M54,48c4.42,0 8,3.58 8,8s-3.58,8-8,8s-8-3.58-8-8S49.58,48 54,48z" />
+      </vector>
+      EOF
 
-          cat << 'EOF' > "$RES_DIR/mipmap-anydpi-v26/ic_launcher.xml"
-          <?xml version="1.0" encoding="utf-8"?>
-          <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
-              <background android:drawable="@drawable/ic_launcher_background" />
-              <foreground android:drawable="@drawable/ic_launcher_foreground" />
-          </adaptive-icon>
-          EOF
+      cat << 'EOF' > "$RES_DIR/mipmap-anydpi-v26/ic_launcher.xml"
+      <?xml version="1.0" encoding="utf-8"?>
+      <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+          <background android:drawable="@drawable/ic_launcher_background" />
+          <foreground android:drawable="@drawable/ic_launcher_foreground" />
+      </adaptive-icon>
+      EOF
 
-          cat << 'EOF' > "$RES_DIR/mipmap-anydpi-v26/ic_launcher_round.xml"
-          <?xml version="1.0" encoding="utf-8"?>
-          <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
-              <background android:drawable="@drawable/ic_launcher_background" />
-              <foreground android:drawable="@drawable/ic_launcher_foreground" />
-          </adaptive-icon>
-          EOF
+      cat << 'EOF' > "$RES_DIR/mipmap-anydpi-v26/ic_launcher_round.xml"
+      <?xml version="1.0" encoding="utf-8"?>
+      <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+          <background android:drawable="@drawable/ic_launcher_background" />
+          <foreground android:drawable="@drawable/ic_launcher_foreground" />
+      </adaptive-icon>
+      EOF
 
-      - name: 🔨 Debug APK Derle (assembleDebug)
-        working-directory: ${{ env.PROJECT_DIR }}
-        run: |
-          gradle assembleDebug --no-daemon --stacktrace
+  - name: 🔨 Debug APK Derle (assembleDebug)
+    working-directory: ${{ env.PROJECT_DIR }}
+    run: |
+      gradle assembleDebug --no-daemon --stacktrace
 
-      - name: 📦 Yeni APK'yı İndirilebilir Yap
-        uses: actions/upload-artifact@v4
-        with:
-          name: StokTakip-Supabase-Yeni-APK
-          path: ${{ env.PROJECT_DIR }}/app/build/outputs/apk/debug/*.apk
-          retention-days: 30
-          if-no-files-found: error
+  - name: 📦 Yeni APK'yı İndirilebilir Yap
+    uses: actions/upload-artifact@v4
+    with:
+      name: StokTakip-Supabase-Yeni-APK
+      path: ${{ env.PROJECT_DIR }}/app/build/outputs/apk/debug/*.apk
+      retention-days: 30
+      if-no-files-found: error
