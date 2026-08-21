@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Stok &amp; Cari Takip</string>
+    <string name="title_dashboard">Genel Bakış</string>
+    <string name="title_cariler">Cari Hesaplar</string>
+    <string name="title_stoklar">Stok Yönetimi</string>
+    <string name="title_satis">Satış &amp; Fiş</string>
+    <string name="title_kasa">Kasa &amp; Tahsilat</string>
+    <string name="title_raporlar">Mali Raporlar</string>
+</resources>

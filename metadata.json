@@ -1,0 +1,6 @@
+{
+  "name": "Stok ve Cari Takip (Supabase Architecture)",
+  "description": "Android Stok ve Cari Takip uygulaması için Firebase'siz, Supabase PostgreSQL Triggers & RPC tabanlı modern MVVM mimarisi, PDF/Termal Yazıcı entegrasyonu ve SQL şeması.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
