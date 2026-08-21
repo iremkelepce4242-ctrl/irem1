@@ -5,9 +5,6 @@ on:
     branches: [ "main", "master" ]
   workflow_dispatch:
 
-permissions:
-  contents: write
-
 jobs:
   build:
     name: 🚀 APK Derle ve Paketle
@@ -27,28 +24,20 @@ jobs:
       - name: 📱 Android SDK Kurulumu
         uses: android-actions/setup-android@v3
 
-      - name: 🔍 Proje Dizinini Tespit Et
-        run: |
-          if [ -d "android_project" ]; then
-            echo "PROJECT_DIR=android_project" >> $GITHUB_ENV
-          else
-            echo "PROJECT_DIR=." >> $GITHUB_ENV
-          fi
-
       - name: ⚙️ Gradle 8.9 Kurulumu
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.9'
-          build-root-directory: ${{ env.PROJECT_DIR }}
+          build-root-directory: android_project
 
-      - name: 🔨 Debug APK Derle (assembleDebug)
-        working-directory: ${{ env.PROJECT_DIR }}
+      - name: 🔨 Debug APK Derle
+        working-directory: android_project
         run: gradle assembleDebug --no-daemon --stacktrace
 
-      - name: 📦 APK'yı İndirilebilir Yap (Artifact)
+      - name: 📦 APK'yı İndirilebilir Yap
         uses: actions/upload-artifact@v4
         with:
           name: StokTakip-Supabase-APK
-          path: ${{ env.PROJECT_DIR }}/app/build/outputs/apk/debug/*.apk
+          path: android_project/app/build/outputs/apk/debug/*.apk
           retention-days: 30
           if-no-files-found: error
