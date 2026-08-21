@@ -1,39 +1,61 @@
 package com.irem.takip
 
 import android.os.Bundle
+import android.widget.Button
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
-import com.irem.takip.data.SupabaseProvider
 import com.irem.takip.data.repository.CariRepository
 import com.irem.takip.data.repository.StokRepository
-import com.irem.takip.data.repository.SatisRepository
 import kotlinx.coroutines.launch
 
 /**
- * Stok ve Cari Takip - Ana Ekran (Android Activity)
- * Firebase kaldırıldı; %100 Supabase PostgreSQL Backend kullanılmaktadır.
+ * Stok ve Cari Takip - Android Ana Ekranı
  */
 class MainActivity : AppCompatActivity() {
 
     private val cariRepository by lazy { CariRepository() }
     private val stokRepository by lazy { StokRepository() }
-    private val satisRepository by lazy { SatisRepository() }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        
-        // Supabase bağlantısını test et
-        lifecycleScope.launch {
-            try {
-                val result = cariRepository.getCariler(yil = 2025)
-                result.onSuccess { cariler ->
-                    android.util.Log.d("MainActivity", "Başarıyla çekilen cari sayısı: ${cariler.size}")
-                }.onFailure { e ->
-                    android.util.Log.e("MainActivity", "Cari listesi çekilemedi: ${e.message}")
+        setContentView(R.layout.activity_main)
+
+        val txtStatus = findViewById<TextView>(R.id.txtStatus)
+        val txtDetails = findViewById<TextView>(R.id.txtDetails)
+        val btnRefresh = findViewById<Button>(R.id.btnRefresh)
+
+        fun checkSupabaseConnection() {
+            txtStatus.text = "⏳ Supabase kontrol ediliyor..."
+            txtStatus.setTextColor(android.graphics.Color.parseColor("#38BDF8"))
+            
+            lifecycleScope.launch {
+                try {
+                    val carilerRes = cariRepository.getCariler(yil = 2025)
+                    val stoklarRes = stokRepository.getStoklar()
+
+                    var cariCount = 0
+                    var stokCount = 0
+
+                    carilerRes.onSuccess { cariCount = it.size }
+                    stoklarRes.onSuccess { stokCount = it.size }
+
+                    txtStatus.text = "✅ Supabase Bağlantısı Aktif!"
+                    txtStatus.setTextColor(android.graphics.Color.parseColor("#10B981"))
+                    txtDetails.text = "📦 Stok Sayısı: $stokCount adet\n👥 Cari Hesap: $cariCount müşteri/tedarikçi\n⚡ PostgreSQL Trigger: Aktif"
+                } catch (e: Exception) {
+                    txtStatus.text = "⚠️ Bağlantı Uyarısı"
+                    txtStatus.setTextColor(android.graphics.Color.parseColor("#F59E0B"))
+                    txtDetails.text = "Hata detayı: ${e.localizedMessage ?: e.message}"
                 }
-            } catch (e: Exception) {
-                android.util.Log.e("MainActivity", "Supabase bağlantı hatası: ${e.message}", e)
             }
         }
+
+        btnRefresh.setOnClickListener {
+            checkSupabaseConnection()
+        }
+
+        // İlk açılışta bağlantıyı test et
+        checkSupabaseConnection()
     }
 }

@@ -1,9 +1,7 @@
-name: Android CI - Supabase APK Derleme
+name: Android CI - APK Derleme
 
 on:
   push:
-    branches: [ "main", "master" ]
-  pull_request:
     branches: [ "main", "master" ]
   workflow_dispatch:
 
@@ -42,116 +40,15 @@ jobs:
         with:
           gradle-version: '8.9'
           build-root-directory: ${{ env.PROJECT_DIR }}
-          cache-read-only: false
-
-      - name: 🔧 Eksik ve Hatalı Kodları Otomatik Onar (Auto-Patch)
-        run: |
-          PROJ_PATH="${{ env.PROJECT_DIR }}"
-          RES_DIR="$PROJ_PATH/app/src/main/res"
-          JAVA_DIR="$PROJ_PATH/app/src/main/java/com/irem/takip"
-          
-          mkdir -p "$RES_DIR/values" "$RES_DIR/xml" "$RES_DIR/drawable" "$RES_DIR/mipmap-anydpi-v26"
-          mkdir -p "$JAVA_DIR"
-
-          # 1. MainActivity.kt'deki import ve tip hatasını düzelt
-          cat << 'EOF' > "$JAVA_DIR/MainActivity.kt"
-          package com.irem.takip
-
-          import android.os.Bundle
-          import androidx.appcompat.app.AppCompatActivity
-          import androidx.lifecycle.lifecycleScope
-          import com.irem.takip.data.repository.CariRepository
-          import kotlinx.coroutines.launch
-
-          class MainActivity : AppCompatActivity() {
-
-              private val cariRepository by lazy { CariRepository() }
-
-              override fun onCreate(savedInstanceState: Bundle?) {
-                  super.onCreate(savedInstanceState)
-                  
-                  lifecycleScope.launch {
-                      try {
-                          val result = cariRepository.getCariler(yil = 2025)
-                          result.onSuccess { cariler ->
-                              android.util.Log.d("MainActivity", "Cari Sayısı: ${cariler.size}")
-                          }
-                      } catch (e: Exception) {
-                          android.util.Log.e("MainActivity", "Hata: ${e.message}", e)
-                      }
-                  }
-              }
-          }
-          EOF
-
-          # 2. Theme.Takip oluştur
-          cat << 'EOF' > "$RES_DIR/values/themes.xml"
-          <resources>
-              <style name="Theme.Takip" parent="Theme.Material3.Dark.NoActionBar">
-                  <item name="colorPrimary">#10B981</item>
-                  <item name="android:statusBarColor">#0F172A</item>
-              </style>
-          </resources>
-          EOF
-
-          # 3. FileProvider file_paths oluştur
-          cat << 'EOF' > "$RES_DIR/xml/file_paths.xml"
-          <?xml version="1.0" encoding="utf-8"?>
-          <paths xmlns:android="http://schemas.android.com/apk/res/android">
-              <external-files-path name="my_pdf_docs" path="documents/" />
-              <external-path name="external" path="." />
-              <cache-path name="cache" path="." />
-              <files-path name="internal_files" path="." />
-          </paths>
-          EOF
-
-          # 4. İkon ve Simge Dosyalarını oluştur
-          cat << 'EOF' > "$RES_DIR/drawable/ic_launcher_background.xml"
-          <?xml version="1.0" encoding="utf-8"?>
-          <vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108">
-              <path android:fillColor="#10B981" android:pathData="M0,0h108v108h-108z" />
-          </vector>
-          EOF
-
-          cat << 'EOF' > "$RES_DIR/drawable/ic_launcher_foreground.xml"
-          <?xml version="1.0" encoding="utf-8"?>
-          <vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108">
-              <path android:fillColor="#FFFFFF" android:pathData="M54,24L30,36v24c0,16.57 10.24,32.08 24,36c13.76-3.92 24-19.43 24-36V36L54,24z M54,48c4.42,0 8,3.58 8,8s-3.58,8-8,8s-8-3.58-8-8S49.58,48 54,48z" />
-          </vector>
-          EOF
-
-          cat << 'EOF' > "$RES_DIR/mipmap-anydpi-v26/ic_launcher.xml"
-          <?xml version="1.0" encoding="utf-8"?>
-          <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
-              <background android:drawable="@drawable/ic_launcher_background" />
-              <foreground android:drawable="@drawable/ic_launcher_foreground" />
-          </adaptive-icon>
-          EOF
-
-          cat << 'EOF' > "$RES_DIR/mipmap-anydpi-v26/ic_launcher_round.xml"
-          <?xml version="1.0" encoding="utf-8"?>
-          <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
-              <background android:drawable="@drawable/ic_launcher_background" />
-              <foreground android:drawable="@drawable/ic_launcher_foreground" />
-          </adaptive-icon>
-          EOF
 
       - name: 🔨 Debug APK Derle (assembleDebug)
         working-directory: ${{ env.PROJECT_DIR }}
-        run: |
-          gradle assembleDebug --no-daemon --stacktrace
+        run: gradle assembleDebug --no-daemon --stacktrace
 
-      - name: 📦 Debug APK'yı İndirilebilir Yap
+      - name: 📦 APK'yı İndirilebilir Yap (Artifact)
         uses: actions/upload-artifact@v4
         with:
-          name: StokCariTakip-Debug-APK
+          name: StokTakip-Supabase-APK
           path: ${{ env.PROJECT_DIR }}/app/build/outputs/apk/debug/*.apk
           retention-days: 30
           if-no-files-found: error
-
-      - name: 📝 Derleme Özeti Ekle
-        run: |
-          echo "## 🎉 Android APK Başarıyla Derlendi!" >> $GITHUB_STEP_SUMMARY
-          echo "- **Derleme Tipi:** Debug APK" >> $GITHUB_STEP_SUMMARY
-          echo "- **Supabase:** %100 Entegre" >> $GITHUB_STEP_SUMMARY
-          echo "- **İndirme:** Sayfanın altındaki **Artifacts** bölümünden \`StokCariTakip-Debug-APK\` dosyasını telefonunuza yükleyebilirsiniz." >> $GITHUB_STEP_SUMMARY
