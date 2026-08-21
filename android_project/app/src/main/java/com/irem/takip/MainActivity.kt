@@ -32,7 +32,7 @@ class MainActivity : AppCompatActivity() {
             lifecycleScope.launch {
                 try {
                     val carilerRes = cariRepository.getCariler(yil = 2025)
-                    val stoklarRes = stokRepository.getStoklar()
+                    val stoklarRes = stokRepository.getStoklar(yil = 2025)
 
                     var cariCount = 0
                     var stokCount = 0

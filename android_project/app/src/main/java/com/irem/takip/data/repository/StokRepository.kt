@@ -11,7 +11,7 @@ class StokRepository {
 
     private val postgrest = SupabaseProvider.postgrest
 
-    suspend fun getStoklar(yil: Int, query: String? = null, grup: String? = null): Result<List<Stok>> = withContext(Dispatchers.IO) {
+    suspend fun getStoklar(yil: Int = 2025, query: String? = null, grup: String? = null): Result<List<Stok>> = withContext(Dispatchers.IO) {
         try {
             val response = postgrest.from("stoklar").select {
                 filter {
