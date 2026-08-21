@@ -157,6 +157,112 @@ object PdfHelper {
         return file
     }
 
+    fun generateCariEkstrePdf(
+        context: Context,
+        firmaAdi: String = "AKILLI STOK & CARİ TAKİP SİSTEMİ",
+        cari: Cari,
+        ekstre: List<CariEkstreItem>
+    ): File {
+        val pdfDocument = PdfDocument()
+        val pageInfo = PdfDocument.PageInfo.Builder(595, 842, 1).create() // A4 boyutu
+        val page = pdfDocument.startPage(pageInfo)
+        val canvas: Canvas = page.canvas
+
+        val titlePaint = Paint().apply {
+            color = Color.parseColor("#1E3A8A")
+            textSize = 18f
+            typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+        }
+        val headerPaint = Paint().apply {
+            color = Color.parseColor("#374151")
+            textSize = 11f
+            typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+        }
+        val textPaint = Paint().apply {
+            color = Color.parseColor("#111827")
+            textSize = 10f
+        }
+        val rightTextPaint = Paint().apply {
+            color = Color.parseColor("#111827")
+            textSize = 10f
+            textAlign = Paint.Align.RIGHT
+        }
+        val linePaint = Paint().apply {
+            color = Color.parseColor("#E5E7EB")
+            strokeWidth = 1f
+        }
+
+        var y = 50f
+
+        // 1. Firma Başlığı
+        canvas.drawText(firmaAdi, 40f, y, titlePaint)
+        y += 20f
+        textPaint.color = Color.parseColor("#6B7280")
+        canvas.drawText("CARİ HESAP EKSTRESİ", 40f, y, textPaint)
+        textPaint.color = Color.parseColor("#111827")
+
+        val tarihStr = SimpleDateFormat("dd.MM.yyyy HH:mm", Locale("tr")).format(Date())
+        canvas.drawText("Tarih: $tarihStr", 555f, 50f, rightTextPaint)
+        canvas.drawText("Müşteri: ${cari.ad}", 555f, 65f, rightTextPaint)
+
+        y += 35f
+        canvas.drawLine(40f, y, 555f, y, linePaint)
+        y += 20f
+
+        // 2. Tablo Başlığı
+        val tableBgPaint = Paint().apply { color = Color.parseColor("#F3F4F6") }
+        canvas.drawRect(40f, y, 555f, y + 24f, tableBgPaint)
+
+        canvas.drawText("Tarih", 50f, y + 16f, headerPaint)
+        canvas.drawText("İşlem Türü / Açıklama", 130f, y + 16f, headerPaint)
+        canvas.drawText("Borç (+)", 360f, y + 16f, Paint(headerPaint).apply { textAlign = Paint.Align.RIGHT })
+        canvas.drawText("Alacak (-)", 450f, y + 16f, Paint(headerPaint).apply { textAlign = Paint.Align.RIGHT })
+        canvas.drawText("Bakiye", 545f, y + 16f, Paint(headerPaint).apply { textAlign = Paint.Align.RIGHT })
+
+        y += 30f
+
+        // 3. Tablo Satırları
+        for (item in ekstre) {
+            val formattedDate = if (item.tarih.length >= 10) item.tarih.substring(0, 10) else item.tarih
+            canvas.drawText(formattedDate, 50f, y, textPaint)
+            val desc = item.aciklama ?: item.tur
+            canvas.drawText(if (desc.length > 30) desc.take(28) + ".." else desc, 130f, y, textPaint)
+            canvas.drawText(if (item.borc > 0) "%.2f TL".format(item.borc) else "-", 360f, y, rightTextPaint)
+            canvas.drawText(if (item.alacak > 0) "%.2f TL".format(item.alacak) else "-", 450f, y, rightTextPaint)
+            canvas.drawText("%.2f TL".format(item.bakiye), 545f, y, rightTextPaint)
+
+            y += 8f
+            canvas.drawLine(40f, y, 555f, y, linePaint)
+            y += 16f
+        }
+
+        y += 15f
+        val totalBoxPaint = Paint().apply {
+            color = Color.parseColor("#1E3A8A")
+            textSize = 12f
+            typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+        }
+        val totalBoxRight = Paint().apply {
+            color = Color.parseColor("#1E3A8A")
+            textSize = 12f
+            typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+            textAlign = Paint.Align.RIGHT
+        }
+
+        canvas.drawText("GÜNCEL BAKİYE:", 400f, y, totalBoxPaint)
+        canvas.drawText("%.2f TL".format(cari.bakiye), 545f, y, totalBoxRight)
+
+        pdfDocument.finishPage(page)
+
+        val file = File(context.cacheDir, "Ekstre_${cari.id}_${System.currentTimeMillis()}.pdf")
+        val outputStream = FileOutputStream(file)
+        pdfDocument.writeTo(outputStream)
+        pdfDocument.close()
+        outputStream.close()
+
+        return file
+    }
+
     fun sharePdf(context: Context, file: File) {
         val uri = FileProvider.getUriForFile(
             context,

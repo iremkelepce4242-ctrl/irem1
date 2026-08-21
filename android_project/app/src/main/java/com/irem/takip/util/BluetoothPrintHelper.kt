@@ -166,8 +166,8 @@ object BluetoothPrintHelper {
     suspend fun printCariEkstre(
         device: BluetoothDevice,
         cari: Cari,
-        ekstreList: List<CariEkstreItem>,
-        yil: Int
+        ekstre: List<CariEkstreItem>,
+        yil: Int = 2025
     ): Result<Unit> = withContext(Dispatchers.IO) {
         var socket: BluetoothSocket? = null
         var outputStream: OutputStream? = null
@@ -186,7 +186,7 @@ object BluetoothPrintHelper {
             outputStream.write(encodeText("=".repeat(32) + "\n"))
 
             outputStream.write(ESC_ALIGN_LEFT)
-            for (item in ekstreList) {
+            for (item in ekstre) {
                 val tarih = if (item.tarih.length >= 10) item.tarih.substring(0, 10) else item.tarih
                 outputStream.write(encodeText("$tarih | ${item.tur}\n"))
                 if (item.borc > 0) outputStream.write(encodeText("  Borç  : +%.2f TL\n".format(item.borc)))

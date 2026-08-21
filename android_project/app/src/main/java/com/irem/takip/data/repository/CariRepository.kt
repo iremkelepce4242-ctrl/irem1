@@ -115,6 +115,8 @@ class CariRepository {
         }
     }
 
+    suspend fun insertTahsilat(tahsilat: Tahsilat): Result<Unit> = addTahsilat(tahsilat)
+
     // Ödeme Ekle (Trigger cari bakiyeyi otomatik artırır!)
     suspend fun addOdeme(odeme: Odeme): Result<Unit> = withContext(Dispatchers.IO) {
         try {
@@ -124,4 +126,6 @@ class CariRepository {
             Result.failure(e)
         }
     }
+
+    suspend fun insertOdeme(odeme: Odeme): Result<Unit> = addOdeme(odeme)
 }
