@@ -1,4 +1,4 @@
-name: Android CI - Supabase APK Derleme
+name: Android CI - Supabase Yeni APK Derleme
 
 on:
   push:
@@ -12,7 +12,7 @@ permissions:
 
 jobs:
   build:
-    name: 🚀 APK Derle ve Paketle
+    name: 🚀 Yeni APK Derle ve Paketle (Ayrı Uygulama)
     runs-on: ubuntu-latest
 
     steps:
@@ -44,16 +44,35 @@ jobs:
           build-root-directory: ${{ env.PROJECT_DIR }}
           cache-read-only: false
 
-      - name: 🔧 Eksik ve Hatalı Kodları Otomatik Onar (Auto-Patch)
+      - name: 🆕 Yeni Bağımsız Uygulama Kimliği ve Kodları Onar
         run: |
           PROJ_PATH="${{ env.PROJECT_DIR }}"
           RES_DIR="$PROJ_PATH/app/src/main/res"
           JAVA_DIR="$PROJ_PATH/app/src/main/java/com/irem/takip"
+          BUILD_GRADLE="$PROJ_PATH/app/build.gradle.kts"
           
           mkdir -p "$RES_DIR/values" "$RES_DIR/xml" "$RES_DIR/drawable" "$RES_DIR/mipmap-anydpi-v26"
           mkdir -p "$JAVA_DIR"
 
-          # 1. MainActivity.kt'deki import ve tip hatasını düzelt
+          # 1. Yeni ve benzersiz paket kimliği tanımla (Eski uygulamayı etkilemez, yan yana kurulur)
+          if [ -f "$BUILD_GRADLE" ]; then
+            sed -i 's/applicationId = "com.irem.takip"/applicationId = "com.irem.stokcari.supabase"/g' "$BUILD_GRADLE"
+          fi
+
+          # 2. Yeni Uygulama Başlığı
+          cat << 'EOF' > "$RES_DIR/values/strings.xml"
+          <resources>
+              <string name="app_name">Stok Takip (Supabase)</string>
+              <string name="title_dashboard">Genel Bakış</string>
+              <string name="title_cariler">Cari Hesaplar</string>
+              <string name="title_stoklar">Stok Yönetimi</string>
+              <string name="title_satis">Satış &amp; Fiş</string>
+              <string name="title_kasa">Kasa &amp; Tahsilat</string>
+              <string name="title_raporlar">Mali Raporlar</string>
+          </resources>
+          EOF
+
+          # 3. MainActivity Onarımı
           cat << 'EOF' > "$JAVA_DIR/MainActivity.kt"
           package com.irem.takip
 
@@ -84,7 +103,7 @@ jobs:
           }
           EOF
 
-          # 2. Theme.Takip oluştur
+          # 4. Tema Onarımı
           cat << 'EOF' > "$RES_DIR/values/themes.xml"
           <resources>
               <style name="Theme.Takip" parent="Theme.Material3.Dark.NoActionBar">
@@ -94,7 +113,7 @@ jobs:
           </resources>
           EOF
 
-          # 3. FileProvider file_paths oluştur
+          # 5. FileProvider Onarımı
           cat << 'EOF' > "$RES_DIR/xml/file_paths.xml"
           <?xml version="1.0" encoding="utf-8"?>
           <paths xmlns:android="http://schemas.android.com/apk/res/android">
@@ -105,7 +124,7 @@ jobs:
           </paths>
           EOF
 
-          # 4. İkon ve Simge Dosyalarını oluştur
+          # 6. İkon Dosyaları
           cat << 'EOF' > "$RES_DIR/drawable/ic_launcher_background.xml"
           <?xml version="1.0" encoding="utf-8"?>
           <vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108">
@@ -141,17 +160,10 @@ jobs:
         run: |
           gradle assembleDebug --no-daemon --stacktrace
 
-      - name: 📦 Debug APK'yı İndirilebilir Yap
+      - name: 📦 Yeni APK'yı İndirilebilir Yap
         uses: actions/upload-artifact@v4
         with:
-          name: StokCariTakip-Debug-APK
+          name: StokTakip-Supabase-Yeni-APK
           path: ${{ env.PROJECT_DIR }}/app/build/outputs/apk/debug/*.apk
           retention-days: 30
           if-no-files-found: error
-
-      - name: 📝 Derleme Özeti Ekle
-        run: |
-          echo "## 🎉 Android APK Başarıyla Derlendi!" >> $GITHUB_STEP_SUMMARY
-          echo "- **Derleme Tipi:** Debug APK" >> $GITHUB_STEP_SUMMARY
-          echo "- **Supabase:** %100 Entegre" >> $GITHUB_STEP_SUMMARY
-          echo "- **İndirme:** Sayfanın altındaki **Artifacts** bölümünden \`StokCariTakip-Debug-APK\` dosyasını telefonunuza yükleyebilirsiniz." >> $GITHUB_STEP_SUMMARY
